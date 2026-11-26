@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Databridge — Raghav Prasanna</title>
+    <meta name="description" content="Databridge case study: verification, pricing and sensitive-data access for an AI training-data marketplace.">
+
+    <meta property="og:title" content="Databridge — Designing trust for an AI data marketplace">
+    <meta property="og:description" content="UX / product case study on verification, usage-based pricing and zero-trust data access.">
+    <meta property="og:image" content="images/id-peek-card.png">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" href="logo.png" type="image/png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preload" href="Fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf" as="font" type="font/ttf" crossorigin>
+    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v})}catch(e){}</script>
+    <link rel="stylesheet" href="site.css">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="site-id">
+            <button class="avatar-ring" type="button" data-stories aria-label="View Raghav's stories"><img src="images/bwme.png" alt="" width="44" height="44" decoding="async"></button>
+            <div class="site-id-text">
+                <a class="site-name" href="./">Raghav Prasanna<span class="verified" role="img" aria-label="Verified"></span></a>
+                <span class="site-loc">London, UK</span>
+            </div>
+        </div>
+        <nav class="site-nav" aria-label="Main">
+            <a href="about.html">About</a>
+            <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
+            <span class="site-clock"><time data-clock>--:--</time></span>
+        </nav>
+    </header>
+
+    <div class="shell">
+
+        <aside class="side case-side">
+            <a class="back-link" href="./">Back to home</a>
+            <ul class="tags"><li>Concept</li><li>Product design</li><li>AI</li></ul>
+            <h1 class="case-title">Databridge</h1>
+            <p class="case-lede">Designing trust for an AI data marketplace, from the upload screen to the license terms.</p>
+            <nav aria-label="On this page">
+                <ul class="toc">
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#approach">Approach</a></li>
+                    <li><a href="#how">How it works</a></li>
+                    <li><a href="#screens">The two screens</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#sensitive">Sensitive data</a></li>
+                    <li><a href="#next">What I'd do next</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="case-body">
+
+            <section class="case-section" id="overview">
+                <h2>Overview</h2>
+                <h3>Data is easy to find. Trust isn't.</h3>
+            <p>
+                Before an AI team pays for a dataset they want four answers. What's in it? Are we allowed to train on
+                it? Is it clean? Will it still be true next quarter? The people who own useful data usually can't
+                answer any of those cheaply. Manual review is the obvious fix, and it doesn't scale: it costs the
+                platform more than a small dataset earns.
+            </p>
+            <p>
+                It gets worse from both sides. Suppliers upload files with no description, no documented schema and
+                personal data hiding in free-text columns. Buyers don't search by dataset name, they search by task,
+                like "French legal contracts, commercial use OK", which keyword search can't read. And each side
+                distrusts the other, so the product has to win both at once.
+            </p>
+                <dl class="meta-list">
+                    <dt>Role &amp; context</dt>
+                    <dd>Product &amp; UX, AI systems design · Concept case study · 2026</dd>
+                    <dt>Focus</dt>
+                    <dd>Verification · Usage-based pricing · Sensitive data</dd>
+                </dl>
+
+            </section>
+
+            <section class="case-section" id="approach">
+                <h2>Approach</h2>
+                <h3>What I set out to do</h3>
+            <p>
+                My bet was to move the expensive checking to upload time and let models do it. When a supplier
+                uploads a file, the system writes the metadata, finds and scrubs personal data, guesses the license
+                class and makes the dataset searchable in plain language. Suppliers get a publish flow that takes
+                minutes. Buyers get listings that carry checked facts instead of seller claims.
+            </p>
+            <figure class="case-figure">
+                <img src="images/case/db-marketplace.svg" alt="Diagram: data suppliers on the left, the Databridge verification layer in the middle, AI trainers on the right" loading="lazy" decoding="async">
+                <figcaption>Suppliers upload raw data, the verification layer gates it, trainers search verified listings.</figcaption>
+            </figure>
+            <p>
+                These are the targets I designed against. They're goals for the concept, not measured results.
+            </p>
+            <div class="metric-grid">
+                <div class="metric"><span class="n">&lt; 15 min</span><span class="d">target time from upload to live listing</span></div>
+                <div class="metric"><span class="n">&gt; 95%</span><span class="d">target share of listings with auto-generated metadata</span></div>
+                <div class="metric"><span class="n">&lt; 1%</span><span class="d">target PII false-negative rate on audited samples</span></div>
+            </div>
+            </section>
+
+            <section class="case-section" id="how">
+                <h2>How it works</h2>
+            <p>Two flows: suppliers push files through an ingestion pipeline, and buyers search through a retrieval flow. Click through the stages.</p>
+
+            <h3>Supplier side: from file to listing</h3>
+            <div class="stages">
+                <div class="stage-tabs" role="tablist" aria-label="Supplier ingestion pipeline stages">
+                    <button type="button" class="stage-tab" role="tab">01 Upload</button>
+                    <button type="button" class="stage-tab" role="tab">02 Stage</button>
+                    <button type="button" class="stage-tab" role="tab">03 Scan</button>
+                    <button type="button" class="stage-tab" role="tab">04 Enrich</button>
+                    <button type="button" class="stage-tab" role="tab">05 Gate</button>
+                    <button type="button" class="stage-tab" role="tab">06 Publish</button>
+                </div>
+                <div class="stage-panels">
+                    <div class="stage-panel" role="tabpanel">
+                        <h4>Upload</h4>
+                        <p>Resumable upload straight to object storage, so files never touch the app server. It takes CSV, Parquet, JSON Lines, PDFs and image archives, with a virus scan on arrival.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Stage</h4>
+                        <p>Files sit in a quarantine bucket buyers can't see. A schema probe reads the first rows and works out types, row counts and null rates.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Scan</h4>
+                        <p>Fast, explainable detectors run first (emails, phone numbers, IDs, card numbers), then a statistical pass on column samples. The output is a PII report per column.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Enrich</h4>
+                        <p>An LLM drafts the title, description, tags, language and a suggested license class. It's always a draft, never auto-published.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Gate</h4>
+                        <p>A rules engine either approves the listing, sends it back to the supplier to fix, or flags it for a human, and logs why every time.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Publish</h4>
+                        <p>The listing goes live. The dataset is versioned, and its hash and license snapshot are frozen.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Buyer side: from task to purchase</h3>
+            <div class="stages">
+                <div class="stage-tabs" role="tablist" aria-label="Buyer search and retrieval stages">
+                    <button type="button" class="stage-tab" role="tab">01 Query</button>
+                    <button type="button" class="stage-tab" role="tab">02 Parse</button>
+                    <button type="button" class="stage-tab" role="tab">03 Retrieve</button>
+                    <button type="button" class="stage-tab" role="tab">04 Rank</button>
+                    <button type="button" class="stage-tab" role="tab">05 Preview</button>
+                    <button type="button" class="stage-tab" role="tab">06 Access</button>
+                </div>
+                <div class="stage-panels">
+                    <div class="stage-panel" role="tabpanel">
+                        <h4>Query</h4>
+                        <p>The buyer types a sentence or uses filters for domain, language, license, size and freshness.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Parse</h4>
+                        <p>The query splits into hard filters ("license must allow commercial training") and the softer meaning ("customer support chat in Portuguese").</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Retrieve</h4>
+                        <p>Keyword and vector search run together. The hard filters apply before anything gets ranked.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Rank</h4>
+                        <p>Relevance, quality score, supplier trust, freshness and fit with the buyer's history are blended into one order. Every result says why it matched.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Preview</h4>
+                        <p>Schema, a PII report summary, license terms and a pre-scrubbed sample, all before the buyer pays.</p>
+                    </div>
+                    <div class="stage-panel" role="tabpanel" hidden>
+                        <h4>Access</h4>
+                        <p>Buying creates a scoped, time-limited grant. Usage is metered, and lineage records which dataset version went into which training run.</p>
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                Underneath, an object store holds the files, a relational database holds listings and grants, and a
+                vector index holds embeddings. The supplier dashboard and the buyer catalog read the same job state,
+                so the two sides never disagree about what's live. For the Python-side tooling I'd start with a hosted
+                embeddings API and pgvector, and keep ingestion on a plain job queue with explicit states. Ingestion
+                has to be auditable, so I'd avoid agent frameworks there.
+            </p>
+            </section>
+
+            <section class="case-section" id="screens">
+                <h2>The two screens</h2>
+            <p>
+                The supplier screen has one job: turn a raw file into a trusted listing with as few decisions as
+                possible. Blocking issues sit in a fix-it list at the top, each with a one-click resolution: redact,
+                drop the column, or mark it non-personal with a logged reason. Suppliers can exclude a column from the
+                listing without deleting it, which takes away the fear of over-sharing, and a "preview as buyer"
+                toggle shows exactly what buyers will see.
+            </p>
+            <figure class="case-figure">
+                <img src="images/case/db-supplier-dashboard.svg" alt="Data Refinery screen showing pipeline status, a PII schema table, a fix-it banner and an auto-generated listing draft" loading="lazy" decoding="async">
+                <figcaption>The Data Refinery: pipeline state, the fix-it list and the generated listing draft on one screen.</figcaption>
+            </figure>
+            <p>
+                The buyer screen has one search bar and removable chips underneath showing how the AI read the query.
+                That keeps its interpretation visible, so the buyer can correct it. Facets stay synced with the chips,
+                and each result card shows a trust badge, a quality score, the license class and a line saying why it
+                matched. Before purchase there's a one-click license check for the buyer's use case, and a preview of
+                the access grant.
+            </p>
+            <figure class="case-figure">
+                <img src="images/case/db-buyer-explorer.svg" alt="Data Explorer screen with a natural-language search, removable parsed chips, facets and result cards with why-it-matched lines" loading="lazy" decoding="async">
+                <figcaption>The Data Explorer: the query's reading stays visible as chips, and every result says why it matched.</figcaption>
+            </figure>
+            </section>
+
+            <section class="case-section" id="pricing">
+                <h2>Pricing by use, not by file</h2>
+            <p>
+                Selling whole datasets under flat licenses breaks down fast. A retrieval eval might need a few hundred
+                pairs out of a 2 million row corpus, and a flat price charges for the other 95%. Fine-tuning teams
+                run many short cycles and want to pay per experiment. And since the EU AI Act asks for documented
+                training data, buyers are paying for proof of rights as much as for rows.
+            </p>
+            <figure class="case-figure">
+                <img src="images/case/lic-flat-vs-metered.svg" alt="Comparison of a flat $6,000 corpus licence against a metered $50 per run charge for the same 5% slice" loading="lazy" decoding="async">
+                <figcaption>The same 5% slice priced two ways. All the dollar figures are placeholders, not market rates.</figcaption>
+            </figure>
+            <p>
+                So I'd price by use class first and consumption second, in three tiers. The buyer picks the class
+                when they request access and the license enforces it, so switching class means a new grant and a new
+                charge, never a silent upgrade.
+            </p>
+            <figure class="case-figure">
+                <img src="images/case/lic-tiers.svg" alt="Three licence tiers: internal evaluation, commercial training and open-source release, with billing unit, pricing, derivative rights and audit rights" loading="lazy" decoding="async">
+                <figcaption>Use class sets the price and the rights before consumption does.</figcaption>
+            </figure>
+            <p>
+                Metering has to be something both sides can verify. Every billable action is written to a hash-chained
+                log, and the platform publishes a Merkle root of it at intervals, so a supplier can check their own
+                events are in it without seeing anyone else's, and a buyer's statement can cite event hashes instead
+                of raw data. Trusted execution environments come next, and zero-knowledge proofs later, if both sides
+                need them.
+            </p>
+            <p>
+                With my placeholder rates, a buyer running a 100,000-row eval three times pays $150 instead of $6,000,
+                and the supplier earns $120 instead of one flat sale. Metered only beats flat after about 150 runs
+                per listing, so I'd still sell full-corpus grants and use the metered tier for long-tail demand.
+            </p>
+            <p>
+                The question enterprise buyers ask first is who owns the weights. My default is that the buyer owns
+                the model they train, the supplier keeps the data, and the license says what the model can be used
+                for. Open-source release is its own tier with supplier sign-off, because public weights can't be
+                taken back. This is a design stance for counsel to confirm, not legal advice. Whether weights count as
+                a derivative work is still open in most jurisdictions.
+            </p>
+            </section>
+
+            <section class="case-section" id="sensitive">
+                <h2>When the data can't be uploaded</h2>
+            <p>
+                Banks, hospitals and big enterprises won't hand raw records to a third party, however well audited,
+                and regulators often want the data to stay in-region. A nicer upload screen won't fix that, so the
+                platform has to work against data it never copies.
+            </p>
+            <p>
+                The first step is bring-your-own-storage. The supplier keeps the bucket, the keys and the retention
+                policy, and runs our pipeline worker in their own account. We get one scoped, short-lived role, and
+                only metadata and redacted samples come back. Revoking access is a key rotation, not a takedown
+                request. I'd ship this first, because it changes legal's question from "where does our data go" to
+                "what can this role do", which is a page of policy they can read.
+            </p>
+            <figure class="case-figure">
+                <img src="images/case/zt-byos.svg" alt="Supplier account holding the bucket, key and pipeline worker, linked by a scoped role to a platform account that holds only the control plane" loading="lazy" decoding="async">
+                <figcaption>The platform reaches in through a scoped, short-lived role and takes back only metadata and redacted samples.</figcaption>
+            </figure>
+            <p>
+                For buyers who need to train on this data, the code goes to the data. Training runs in an enclave in
+                the supplier's account, the key is only released if the attestation matches the approved code, and an
+                egress gate lets checkpoints and metrics out while blocking raw rows. Enclaves don't stop a model
+                from memorizing what it saw, so differential privacy covers that, at some cost to accuracy.
+                Multi-party computation handles joint statistics across suppliers, but not deep learning.
+            </p>
+            <figure class="case-figure">
+                <img src="images/case/zt-tiers.svg" alt="Staircase of five deployment tiers from standard platform storage up to joint analysis with multi-party computation" loading="lazy" decoding="async">
+                <figcaption>Five tiers. Custody and running cost rise together, so buyers start on the lowest one that meets their legal need.</figcaption>
+            </figure>
+            <p>
+                Each listing declares its tier and says what it doesn't defend against. For example, the enclave tier
+                stops raw data leaving but not memorization. These are design targets and would need penetration
+                testing and independent review before anyone says them to a customer.
+            </p>
+            </section>
+
+            <section class="case-section" id="next">
+                <h2>What I'd do next</h2>
+            <p>
+                I haven't shipped this, so nothing here is a result. The first thing I'd build is the proxy and
+                bring-your-own-storage path on one pilot corpus with two suppliers, with a gate of zero raw-data
+                egress. Then a pricing pilot with a few suppliers and buyers to find out what people actually pay per
+                row, and tier-specific license templates drafted with counsel. After that, enclave training for
+                evaluation jobs, and only then differential privacy and joint analysis.
+            </p>
+            <div class="note">Every number in this case study is a target or a placeholder. I'd want pilot data and legal review before quoting any of it.</div>
+                <a class="next-case" href="Case1.html">
+                    <small>Next case study</small>
+                    <span>Clear Breath</span>
+                </a>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script src="site.js" defer></script>
+</body>
+
+</html>
