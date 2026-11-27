@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareRelay — Raghav Prasanna</title>
+    <meta name="description" content="CareRelay case study: designing the alert and escalation dashboard for a white-label remote patient monitoring platform.">
+
+    <meta property="og:title" content="CareRelay — Designing an alert system for remote patient monitoring">
+    <meta property="og:description" content="UX case study: escalation flows, data prioritisation and nurse and doctor dashboards for a white-label RPM platform.">
+    <meta property="og:image" content="images/case/cr-cover.svg">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" href="logo.png" type="image/png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preload" href="Fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf" as="font" type="font/ttf" crossorigin>
+    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v})}catch(e){}</script>
+    <link rel="stylesheet" href="site.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="site-id">
+            <button class="avatar-ring" type="button" data-stories aria-label="View Raghav's stories"><img src="images/bwme.png" alt="" width="44" height="44" decoding="async"></button>
+            <div class="site-id-text">
+                <a class="site-name" href="./">Raghav Prasanna<span class="verified" role="img" aria-label="Verified"></span></a>
+                <span class="site-loc">London, UK</span>
+            </div>
+        </div>
+        <nav class="site-nav" aria-label="Main">
+            <a href="about.html">About</a>
+            <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
+            <span class="site-clock"><time data-clock>--:--</time></span>
+        </nav>
+    </header>
+
+    <div class="shell">
+
+        <aside class="side case-side">
+            <a class="back-link" href="./">Back to home</a>
+            <ul class="tags"><li>Healthcare</li><li>IoT</li><li>Dashboard</li></ul>
+            <h1 class="case-title">CareRelay</h1>
+            <p class="case-lede">Designing the alert system for a remote patient monitoring platform, where eight seconds can matter.</p>
+            <nav aria-label="On this page">
+                <ul class="toc">
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#system">How RPM works</a></li>
+                    <li><a href="#escalation">The escalation chain</a></li>
+                    <li><a href="#users">Who it's for</a></li>
+                    <li><a href="#alignment">Getting aligned</a></li>
+                    <li><a href="#priority">What matters most</a></li>
+                    <li><a href="#testing">Testing for speed</a></li>
+                    <li><a href="#designs">Final designs</a></li>
+                    <li><a href="#learnings">What I learned</a></li>
+                    <li><a href="#principles">Principles used</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="case-body">
+
+            <!-- Overview -->
+            <section class="case-section" id="overview">
+                <h2>Overview</h2>
+                <p class="cs-lead">When a patient presses SOS, someone needs to respond in about eight seconds. The dashboard can't be the thing that slows them down.</p>
+                <p>
+                    An IoT healthcare company wanted to sell remote patient monitoring (RPM) to clinics and hospitals
+                    as a white-label service. Patients wear devices at home or on the ward. The devices stream vitals.
+                    Nurses and doctors watch a dashboard and act when something goes wrong.
+                </p>
+                <p>
+                    I was brought in to turn that idea into a real product: something they could demo, sell, and grow.
+                    CareRelay is the name I use here for the white-label platform.
+                </p>
+
+                <figure class="case-figure">
+                    <img src="images/case/cr-cover.svg" alt="Nurse dashboard during a vital alert: a red banner across the top, the heart rate card flagged in red, and the patient highlighted in the list on the right" loading="eager" decoding="async">
+                    <figcaption>The nurse dashboard during a vital alert. The problem, the patient and the next action are visible in one glance.</figcaption>
+                </figure>
+
+                <dl class="meta-list">
+                    <dt>Role</dt>
+                    <dd>Product designer, from research to final UI</dd>
+                    <dt>Client</dt>
+                    <dd>An IoT healthcare company selling RPM to clinics and hospitals</dd>
+                    <dt>Worked with</dt>
+                    <dd>Product managers, engineers and clinical stakeholders</dd>
+                    <dt>What I did</dt>
+                    <dd>System mapping · User interviews · Data prioritisation · MoSCoW scoping · Competitive research · Information architecture · Wireframes · Testing · UI design</dd>
+                </dl>
+
+                <div class="metric-grid">
+                    <div class="metric"><span class="n">~8 sec</span><span class="d">to respond to an SOS before harm becomes likely</span></div>
+                    <div class="metric"><span class="n">3 levels</span><span class="d">of escalation: nurse, supervisor, doctor</span></div>
+                    <div class="metric"><span class="n">2 views</span><span class="d">one to read and react, one to act and manage</span></div>
+                </div>
+            </section>
+
+            <!-- System -->
+            <section class="case-section" id="system">
+                <h2>Where it started</h2>
+                <p>The client had a lot going for them, and one big gap.</p>
+                <div class="cs-grid2 rp-have">
+                    <div class="cs-card">
+                        <h4>What they had</h4>
+                        <p>A strong vision. A clear business case. Stakeholders who were on board.</p>
+                    </div>
+                    <div class="cs-card">
+                        <h4>What they didn't</h4>
+                        <p>A usable product. No dashboard, no workflows, and no shared picture of how nurses and doctors would actually use it day to day.</p>
+                    </div>
+                </div>
+
+                <h3>The constraints</h3>
+                <ul class="rp-tags">
+                    <li>Short, fixed timeline</li>
+                    <li>Small design and dev team</li>
+                    <li>Strict budget</li>
+                    <li>High clinical expectations</li>
+                </ul>
+                <div class="note">The biggest risk wasn't under-designing. It was over-designing, or designing before we understood the system.</div>
+
+                <h3>Three questions first</h3>
+                <p>So before drawing anything, I asked:</p>
+                <ol class="rp-qs">
+                    <li>How does an RPM system actually work?</li>
+                    <li>What job does the dashboard do inside it?</li>
+                    <li>Who are we really designing for?</li>
+                </ol>
+
+                <h3>How RPM works, end to end</h3>
+                <p>I mapped the whole lifecycle of an alert, from a sensor reading to a closed case. Tap through it.</p>
+                <div class="stages cs-flow rp-flow6">
+                    <div class="stage-tabs" role="tablist" aria-label="Remote patient monitoring lifecycle">
+                        <button type="button" class="stage-tab" role="tab"><small>01</small><b>Measure</b></button>
+                        <button type="button" class="stage-tab" role="tab"><small>02</small><b>Send</b></button>
+                        <button type="button" class="stage-tab" role="tab"><small>03</small><b>Check</b></button>
+                        <button type="button" class="stage-tab" role="tab"><small>04</small><b>Alert</b></button>
+                        <button type="button" class="stage-tab" role="tab"><small>05</small><b>Respond</b></button>
+                        <button type="button" class="stage-tab" role="tab"><small>06</small><b>Record</b></button>
+                    </div>
+                    <div class="stage-panels">
+                        <div class="stage-panel" role="tabpanel"><h4>Measure</h4><p>Wearables and home devices read heart rate, blood oxygen, blood pressure, temperature and breathing rate. The patient also has an SOS button.</p></div>
+                        <div class="stage-panel" role="tabpanel" hidden><h4>Send</h4><p>Readings travel through a gateway to the cloud, continuously.</p></div>
+                        <div class="stage-panel" role="tabpanel" hidden><h4>Check</h4><p>Every reading is compared with thresholds the doctor set for that specific patient.</p></div>
+                        <div class="stage-panel" role="tabpanel" hidden><h4>Alert</h4><p>Cross a threshold, or press SOS, and an alert fires. It goes to the patient's assigned nurse first. <strong>This is where the dashboard lives.</strong></p></div>
+                        <div class="stage-panel" role="tabpanel" hidden><h4>Respond</h4><p>Someone acknowledges, checks in, or acts. If nobody does, the alert climbs the escalation chain.</p></div>
+                        <div class="stage-panel" role="tabpanel" hidden><h4>Record</h4><p>Everything is logged: who saw it, who acted, how long it took. That history feeds the next decision, and the audit trail.</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Escalation -->
+            <section class="case-section" id="escalation">
+                <h2>The insight: it's an escalation system</h2>
+                <p>
+                    Mapping the lifecycle changed how I saw the product. This isn't a data dashboard. It's a relay.
+                    Alerts pass up three levels until someone picks them up.
+                </p>
+                <p>
+                    Try it. Trigger an SOS, then respond, or let it time out and watch it climb.
+                </p>
+
+                <div class="rp-esc" data-escalation>
+                    <div class="rp-lanes">
+                        <div class="rp-lane">
+                            <div class="rp-lane-head"><span class="rp-lvl">P1</span><div><b>Nurse</b><small>Gets the alert first</small></div></div>
+                            <div class="rp-meter"><i></i></div>
+                            <span class="rp-state">Waiting</span>
+                        </div>
+                        <div class="rp-lane">
+                            <div class="rp-lane-head"><span class="rp-lvl">P2</span><div><b>Supervisor nurse</b><small>If the nurse can't take it</small></div></div>
+                            <div class="rp-meter"><i></i></div>
+                            <span class="rp-state">Waiting</span>
+                        </div>
+                        <div class="rp-lane">
+                            <div class="rp-lane-head"><span class="rp-lvl">P3</span><div><b>Doctor</b><small>Final level</small></div></div>
+                            <div class="rp-meter"><i></i></div>
+                            <span class="rp-state">Waiting</span>
+                        </div>
+                    </div>
+                    <div class="rp-controls">
+                        <button type="button" class="rp-btn is-primary" data-trigger>Trigger SOS</button>
+                        <button type="button" class="rp-btn is-go" data-ack disabled>Respond</button>
+                        <button type="button" class="rp-btn" data-reset>Reset</button>
+                        <span class="rp-log" aria-live="polite">Press Trigger SOS to start.</span>
+                    </div>
+                </div>
+
+                <h3>Why this had to be right</h3>
+                <p>
+                    If the dashboard is confusing, people respond slower. In this setting, slower means real harm.
+                    Every extra second a nurse spends hunting for the alert, reading a cluttered screen or wondering
+                    what to click is a second the patient doesn't have.
+                </p>
+                <ul class="cs-chips"><li><a href="#p-status">Visibility of system status</a></li><li><a href="#p-preattentive">Preattentive processing</a></li></ul>
+            </section>
+
+            <!-- Users -->
+            <section class="case-section" id="users">
+                <h2>Who it's for</h2>
+                <p>
+                    I focused on the decisions each person is responsible for, not just their job title. Healthcare
+                    personas helped me map who touches the dashboard most, and interviews with each group showed me
+                    what could break the platform for them.
+                </p>
+                <div class="cs-grid2">
+                    <div class="cs-card">
+                        <h4><span>P1</span>Nurse</h4>
+                        <p><strong>Decides:</strong> is this patient OK right now? Responds first, every time.</p>
+                        <p style="margin-top:8px"><strong>Needs:</strong> to see who needs help in one glance, across all her assigned patients, and act without hunting.</p>
+                    </div>
+                    <div class="cs-card">
+                        <h4><span>P2</span>Supervisor nurse</h4>
+                        <p><strong>Decides:</strong> who picks this up when the nurse can't?</p>
+                        <p style="margin-top:8px"><strong>Needs:</strong> to know immediately when an alert has passed to her, and what's already been tried.</p>
+                    </div>
+                    <div class="cs-card">
+                        <h4><span>P3</span>Doctor</h4>
+                        <p><strong>Decides:</strong> what's the treatment, and what should the thresholds be?</p>
+                        <p style="margin-top:8px"><strong>Needs:</strong> every patient across wards, trends over time, and controls to add patients and adjust limits.</p>
+                    </div>
+                    <div class="cs-card">
+                        <h4><span>!</span>The common thread</h4>
+                        <p>Nobody wanted more data. Everyone wanted less noise. Too many low-priority alerts train people to ignore all of them.</p>
+                        <ul class="cs-chips"><li><a href="#p-fatigue">Alarm fatigue</a></li></ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alignment -->
+            <section class="case-section" id="alignment">
+                <h2>Getting everyone aligned</h2>
+                <p>
+                    A product like this needs more than good ideas. It needs everyone pulling the same way. So I set up
+                    a clear product vision early, and a tight loop with PMs and engineers that kept approvals fast.
+                </p>
+                <ol class="rp-loop">
+                    <li>Share the vision<small>One page everyone agrees on</small></li>
+                    <li>Design<small>Small, testable pieces</small></li>
+                    <li>Review<small>PMs, engineers, clinicians</small></li>
+                    <li>Feedback<small>Concerns raised early</small></li>
+                </ol>
+                <p>
+                    Regular check-ins meant concerns came up early, when they were cheap to fix. It's a big part of why
+                    we moved fast, and why everyone felt they owned the result.
+                </p>
+                <h3>Advocating for UX</h3>
+                <p>
+                    The client was used to top-down decisions. Bringing in a user-centred process meant pushing back
+                    sometimes: asking for interviews before features, and testing before sign-off. Once the first
+                    test results came in, the process sold itself.
+                </p>
+            </section>
+
+            <!-- Priority -->
+            <section class="case-section" id="priority">
+                <h2>Deciding what matters most</h2>
+                <p>
+                    Before any layout, one question shaped everything: <strong>which data deserves attention, and when?</strong>
+                    RPM produces a flood of numbers. Show all of it and you slow everyone down.
+                </p>
+                <p>The priorities didn't come from guesses. They came from:</p>
+                <div class="cs-research rp-sources">
+                    <div class="col">
+                        <div class="box">Stakeholders &amp; domain experts<small>What clinicians act on</small></div>
+                        <div class="box">RPM workflows &amp; standards<small>Industry practice</small></div>
+                        <div class="box">Vitals &amp; alert thresholds<small>Common clinical limits</small></div>
+                        <div class="box">Patient-safety SLAs<small>Required response times</small></div>
+                    </div>
+                    <span class="arrow" aria-hidden="true"></span>
+                    <div class="col"><div class="box">Synthesis<small>Rank by urgency</small></div></div>
+                    <span class="arrow" aria-hidden="true"></span>
+                    <div class="col"><div class="box is-key">4 priority tiers<small>What shows, and when</small></div></div>
+                </div>
+
+                <h3>The four tiers</h3>
+                <p>The higher the tier, the louder it gets. Tap a tier to see what's in it.</p>
+                <div class="stages rp-tiers">
+                    <div class="stage-tabs" role="tablist" aria-label="Data priority tiers">
+                        <button type="button" class="stage-tab" role="tab">Critical<small>Interrupts</small></button>
+                        <button type="button" class="stage-tab" role="tab">Primary<small>Always visible</small></button>
+                        <button type="button" class="stage-tab" role="tab">Context<small>One glance away</small></button>
+                        <button type="button" class="stage-tab" role="tab">Reference<small>On demand</small></button>
+                    </div>
+                    <div class="stage-panels">
+                        <div class="stage-panel" role="tabpanel"><h4>Critical: stop what you're doing</h4><ul><li>SOS from a patient</li><li>A vital outside the doctor's threshold</li></ul><p>Takes over the screen or the top of it, in colour and words, with the action right there.</p></div>
+                        <div class="stage-panel" role="tabpanel" hidden><h4>Primary: always on screen</h4><ul><li>Heart rate, SpO₂, blood pressure, temperature, breathing rate</li><li>Patient status in the list</li></ul></div>
+                        <div class="stage-panel" role="tabpanel" hidden><h4>Context: one glance away</h4><ul><li>Recent alert history and who handled it</li><li>Short trend lines</li><li>Device connection and battery</li></ul></div>
+                        <div class="stage-panel" role="tabpanel" hidden><h4>Reference: when you ask for it</h4><ul><li>Full history and graphs</li><li>Demographics, conditions, notes</li><li>Threshold settings (doctor only)</li></ul></div>
+                    </div>
+                </div>
+                <ul class="cs-chips"><li><a href="#p-progressive">Progressive disclosure</a></li><li><a href="#p-load">Cognitive load</a></li></ul>
+
+                <h3>Scoping the MVP with MoSCoW</h3>
+                <p>
+                    With little time and budget, I had to be ruthless. A MoSCoW analysis decided what made the first
+                    release: enough to fix the core problems, nothing that would sink the schedule.
+                </p>
+                <div class="rp-moscow">
+                    <div>
+                        <h4>Must<small>MVP</small></h4>
+                        <ul><li>Real-time alert feed</li><li>Full-screen SOS</li><li>Assigned patient list with status</li><li>Key vitals per patient</li><li>Acknowledge and auto-escalate</li></ul>
+                    </div>
+                    <div>
+                        <h4>Should<small>Soon</small></h4>
+                        <ul><li>Alert history</li><li>Vitals trend graphs</li><li>Doctor-set thresholds</li><li>Add a patient</li></ul>
+                    </div>
+                    <div>
+                        <h4>Could<small>Later</small></h4>
+                        <ul><li>Shift handover notes</li><li>Ward-level analytics</li><li>Device health view</li></ul>
+                    </div>
+                    <div>
+                        <h4>Won't<small>Not now</small></h4>
+                        <ul><li>Video consultations</li><li>Patient-facing app</li><li>Full records integration</li></ul>
+                    </div>
+                </div>
+
+                <h3>Learning from competitors</h3>
+                <p>I studied competing RPM dashboards for good patterns, new ideas and gaps we could fill.</p>
+                <div class="cs-grid2">
+                    <div class="cs-card">
+                        <h4>Worth keeping</h4>
+                        <p>Patient lists sorted by status. Consistent colours for severity. Vitals as compact cards with a small trend line.</p>
+                    </div>
+                    <div class="cs-card">
+                        <h4>Gaps we could own</h4>
+                        <p>Alerts that look like every other notification. Escalation that's invisible to the person it passes to. One view crammed with every role's tools.</p>
+                    </div>
+                </div>
+                <p style="margin-top:24px">
+                    With user feedback, a UX review and the competitive picture together, the client agreed to the
+                    recommended changes, including several new features.
+                </p>
+            </section>
+
+            <!-- Testing -->
+            <section class="case-section" id="testing">
+                <h2>Testing for speed, not taste</h2>
+                <p>
+                    To check the priorities early, I made several versions of the dashboard: sketches, low-fidelity
+                    wireframes and simple UI models. Then I ran informal A/B tests with clinical staff.
+                </p>
+                <p>
+                    I wasn't asking which one they liked. I was measuring <strong>how fast they found the critical alert</strong>,
+                    what drew their eye, and what got buried. Try it yourself.
+                </p>
+
+                <div class="rp-test" data-spot>
+                    <div class="rp-test-frame">
+                        <div class="rp-wire-head" aria-hidden="true"><i></i><i></i><i></i></div>
+                        <div class="rp-tiles"></div>
+                        <div class="rp-cover">
+                            <p>One of these twelve patients has a heart rate above threshold. Find them and click as fast as you can.</p>
+                            <button type="button" class="rp-btn" data-start>Start variant A</button>
+                        </div>
+                    </div>
+                    <div class="rp-results">
+                        <div class="rp-result"><span>Variant A · dense grid</span><b data-result="a">–</b></div>
+                        <div class="rp-result"><span>Variant B · alert first</span><b data-result="b">–</b></div>
+                    </div>
+                </div>
+
+                <p style="margin-top:24px">
+                    The results reshaped the hierarchy: less density, fewer competing numbers, and critical data
+                    that stays loud and actionable.
+                </p>
+                <ul class="cs-chips"><li><a href="#p-preattentive">Preattentive processing</a></li><li><a href="#p-hicks">Hick's law</a></li></ul>
+
+                <h3>The sitemap</h3>
+                <p>Two roles, two shapes. The nurse app stays shallow so nothing is more than a tap away. The doctor app goes deeper.</p>
+                <div class="rp-maps">
+                    <div class="rp-map">
+                        <b>Nurse</b>
+                        <ul>
+                            <li><span>Dashboard</span>
+                                <ul><li><span>Alert banner / SOS</span></li><li><span>Selected patient</span></li><li><span>My patients list</span></li></ul>
+                            </li>
+                            <li><span>Patient</span>
+                                <ul><li><span>Key vitals</span></li><li><span>Alert history</span></li><li><span>Profile</span></li></ul>
+                            </li>
+                            <li><span>Alerts</span></li>
+                        </ul>
+                    </div>
+                    <div class="rp-map">
+                        <b>Doctor</b>
+                        <ul>
+                            <li><span>Overview</span>
+                                <ul><li><span>All wards</span></li><li><span>Active and escalated alerts</span></li></ul>
+                            </li>
+                            <li><span>Patients</span>
+                                <ul><li><span>Add patient</span></li><li><span>Patient detail</span></li><li><span>Graphs and history</span></li><li><span>Thresholds</span></li></ul>
+                            </li>
+                            <li><span>Settings</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Designs -->
+            <section class="case-section" id="designs">
+                <h2>Final designs</h2>
+                <p>Switch between the states below. The notes underneath change with each one.</p>
+
+                <div data-states>
+                    <div class="rp-dash-bar">
+                        <div class="cs-seg" role="group" aria-label="Dashboard state">
+                            <button type="button" data-state-btn="normal">Nurse · normal</button>
+                            <button type="button" data-state-btn="vital">Vital alert</button>
+                            <button type="button" data-state-btn="sos">SOS</button>
+                            <button type="button" data-state-btn="doctor">Doctor view</button>
+                        </div>
+                    </div>
+
+                    <div class="cs-frame rp-frame rp-dash" data-state="normal" role="img" aria-label="Interactive mockup of the CareRelay dashboard">
+                        <!-- Nurse view -->
+                        <div class="cs-app rp-app rp-nurse">
+                            <div class="cs-top"><span class="rp-logo">Northgate Health</span><span class="rp-shift">Ward B · Day shift</span><span class="rp-who">Nurse Priya S.</span></div>
+                            <div class="rp-body">
+                                <div class="rp-rail"><i></i><i></i><i></i><i></i></div>
+                                <div class="rp-main">
+                                    <div class="rp-banner">
+                                        <b class="rp-v-only">Heart rate above threshold</b>
+                                        <b class="rp-s-only">SOS pressed</b>
+                                        <span>Margaret Ellis · Bed 12 · <span class="rp-v-only">128 bpm, limit 110 set by Dr Okafor</span><span class="rp-s-only">patient needs help now</span></span>
+                                        <div class="rp-acts"><span class="rp-chip">Escalate</span><span class="rp-chip is-solid">Acknowledge</span></div>
+                                    </div>
+                                    <div class="rp-pt">
+                                        <i class="rp-av"></i>
+                                        <div><b>Margaret Ellis</b><span>74 · Bed 12 · Ward B</span></div>
+                                        <div class="rp-tagrow"><span class="rp-pill">COPD</span><span class="rp-pill">Hypertension</span><span class="rp-pill is-ok">Stable</span><span class="rp-pill is-bad">Alert</span></div>
+                                    </div>
+                                    <div class="rp-vitals">
+                                        <div class="rp-vital is-hr"><small>Heart rate</small><b><span class="rp-hr-ok">82</span><span class="rp-hr-alert">128</span><sub>bpm</sub></b><svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0 12 L12 11 L24 13 L36 10 L48 12 L60 11 L72 9 L84 6 L100 3"/></svg><span class="rp-range">Limit 50–110</span></div>
+                                        <div class="rp-vital"><small>SpO₂</small><b>96<sub>%</sub></b><svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0 8 L14 9 L28 8 L42 10 L56 9 L70 8 L84 9 L100 8"/></svg><span class="rp-range">Limit ≥ 92</span></div>
+                                        <div class="rp-vital"><small>Blood pressure</small><b>128/82</b><svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0 10 L14 11 L28 9 L42 10 L56 12 L70 10 L84 11 L100 10"/></svg><span class="rp-range">mmHg</span></div>
+                                        <div class="rp-vital"><small>Temperature</small><b>36.8<sub>°C</sub></b><svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0 11 L14 11 L28 10 L42 11 L56 10 L70 11 L84 10 L100 10"/></svg><span class="rp-range">Limit 35–38</span></div>
+                                        <div class="rp-vital"><small>Breathing</small><b>16<sub>/min</sub></b><svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0 10 L14 9 L28 11 L42 10 L56 9 L70 10 L84 11 L100 10"/></svg><span class="rp-range">Limit 12–20</span></div>
+                                    </div>
+                                    <div class="rp-hist">
+                                        <b>Alert history</b>
+                                        <span class="is-new"><em>Now</em>Heart rate 128 bpm, above 110</span>
+                                        <span><em>09:42</em>SpO₂ dipped to 91%. Resolved by Nurse Priya in 6s</span>
+                                        <span><em>Yesterday</em>Device disconnected for 4 min. Reconnected</span>
+                                        <span><em>Mon</em>Blood pressure 152/96. Reviewed by Dr Okafor</span>
+                                    </div>
+                                </div>
+                                <div class="rp-list">
+                                    <b>My patients<em>8</em></b>
+                                    <span class="rp-row is-sel"><i class="rp-av"></i><div><b>Margaret Ellis</b><span>Bed 12</span></div><i></i></span>
+                                    <span class="rp-row"><i class="rp-av"></i><div><b>James Okoro</b><span>Bed 3</span></div><i></i></span>
+                                    <span class="rp-row"><i class="rp-av"></i><div><b>Ruth Chen</b><span>Bed 7</span></div><i class="is-warn"></i></span>
+                                    <span class="rp-row"><i class="rp-av"></i><div><b>David Novak</b><span>Bed 9</span></div><i></i></span>
+                                    <span class="rp-row"><i class="rp-av"></i><div><b>Leila Haddad</b><span>Bed 14</span></div><i></i></span>
+                                    <span class="rp-row"><i class="rp-av"></i><div><b>Sean Murphy</b><span>Home</span></div><i></i></span>
+                                    <span class="rp-row"><i class="rp-av"></i><div><b>Tomas Silva</b><span>Home</span></div><i></i></span>
+                                </div>
+                            </div>
+                            <div class="rp-sos">
+                                <div class="rp-sos-card">
+                                    <small>SOS</small>
+                                    <b>Margaret Ellis needs help</b>
+                                    <span>Bed 12 · Ward B · pressed 2 seconds ago</span>
+                                    <div class="rp-count"><b>8</b></div>
+                                    <span>Passes to the supervisor nurse if nobody responds</span>
+                                    <div class="rp-sos-acts"><span class="cs-btn is-ghost">Call patient</span><span class="cs-btn">I'm responding</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Doctor view -->
+                        <div class="cs-app rp-app rp-doc">
+                            <div class="cs-top"><span class="rp-logo">Northgate Health</span><span class="rp-shift">All wards</span><span class="rp-who">Dr A. Okafor</span></div>
+                            <div class="rp-doc-body">
+                                <div class="rp-rail"><i></i><i></i><i></i><i></i></div>
+                                <div class="rp-wards">
+                                    <b>Wards</b>
+                                    <span class="on">All patients<em>34</em></span>
+                                    <span>Ward A<em>12</em></span>
+                                    <span><i class="rp-dotred"></i>Ward B<em>8</em></span>
+                                    <span>Ward C<em>9</em></span>
+                                    <span>At home<em>5</em></span>
+                                </div>
+                                <div class="rp-doc-main">
+                                    <div class="rp-doc-head"><p class="cs-h">Patients</p><span class="cs-btn">+ Add patient</span><span class="cs-btn is-ghost">Edit thresholds</span></div>
+                                    <div class="rp-stats">
+                                        <div class="rp-stat"><small>Monitored</small><b>34</b></div>
+                                        <div class="rp-stat is-bad"><small>Active alerts</small><b>2</b></div>
+                                        <div class="rp-stat"><small>Escalated to you</small><b>1</b></div>
+                                        <div class="rp-stat"><small>Avg response</small><b>5.8s</b></div>
+                                    </div>
+                                    <div class="rp-split">
+                                        <div class="rp-table">
+                                            <span><b>Patient</b><b>HR</b><b>SpO₂</b><b>BP</b><b>Ward</b></span>
+                                            <span class="is-sel"><b>Margaret Ellis</b><span class="hot">128</span><span>96%</span><span>128/82</span><span>B · 12</span></span>
+                                            <span><b>Ruth Chen</b><span>88</span><span class="hot">91%</span><span>118/76</span><span>B · 7</span></span>
+                                            <span><b>Arjun Patel</b><span>72</span><span>98%</span><span>122/80</span><span>A · 2</span></span>
+                                            <span><b>Kate Brown</b><span>66</span><span>97%</span><span>110/70</span><span>C · 4</span></span>
+                                            <span><b>Peter Walsh</b><span>79</span><span>95%</span><span>134/86</span><span>Home</span></span>
+                                        </div>
+                                        <div class="rp-chart">
+                                            <b>Margaret Ellis · heart rate, 24h</b>
+                                            <small>Dashed line: her 110 bpm limit</small>
+                                            <svg viewBox="0 0 200 90" preserveAspectRatio="none">
+                                                <line class="grid" x1="0" y1="20" x2="200" y2="20"/><line class="grid" x1="0" y1="45" x2="200" y2="45"/><line class="grid" x1="0" y1="70" x2="200" y2="70"/>
+                                                <path class="area" d="M0 62 L20 60 L40 64 L60 58 L80 61 L100 55 L120 57 L140 50 L160 42 L180 30 L200 16 L200 90 L0 90 Z"/>
+                                                <line class="thr" x1="0" y1="30" x2="200" y2="30"/>
+                                                <path class="line" d="M0 62 L20 60 L40 64 L60 58 L80 61 L100 55 L120 57 L140 50 L160 42 L180 30 L200 16"/>
+                                                <circle class="pt" cx="200" cy="16" r="3"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cs-notes rp-notes1">
+                        <div data-state-note="normal">
+                            <h4>Nurse dashboard, normal</h4>
+                            <p>Her assigned patients sit in the list on the right. The selected patient's profile, five key vitals and recent alert history stay in view. Nothing shouts, because nothing needs to.</p>
+                            <ul class="cs-chips"><li><a href="#p-recognition">Recognition over recall</a></li><li><a href="#p-load">Cognitive load</a></li></ul>
+                        </div>
+                        <div data-state-note="vital">
+                            <h4>Vital alert</h4>
+                            <p>Margaret's heart rate crossed the 110 bpm limit her doctor set. A banner names the patient, the reading and the limit, with Acknowledge and Escalate right there. The vital card and her row in the list turn red too, so the alert reads from anywhere on screen.</p>
+                            <ul class="cs-chips"><li><a href="#p-preattentive">Preattentive processing</a></li><li><a href="#p-colour">Not colour alone</a></li><li><a href="#p-fitts">Fitts's law</a></li></ul>
+                        </div>
+                        <div data-state-note="sos">
+                            <h4>SOS</h4>
+                            <p>The patient pressed for help. This one interrupts everything: a full-screen takeover with the patient, the location, a countdown and one big primary action. The countdown shows exactly when it will pass to the supervisor.</p>
+                            <ul class="cs-chips"><li><a href="#p-status">Visibility of system status</a></li><li><a href="#p-hicks">Hick's law</a></li><li><a href="#p-fatigue">Alarm fatigue</a></li></ul>
+                        </div>
+                        <div data-state-note="doctor">
+                            <h4>Doctor view</h4>
+                            <p>The nurse view is read and react. The doctor view is for acting and managing. Doctors see patients across every ward, add new ones, open graphs and history, and set the thresholds that drive every alert.</p>
+                            <ul class="cs-chips"><li><a href="#p-progressive">Progressive disclosure</a></li><li><a href="#p-consistency">Consistency</a></li></ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Learnings -->
+            <section class="case-section" id="learnings">
+                <h2>What I learned</h2>
+                <ul class="cs-learn">
+                    <li><b>Understand the system before the screen</b>Mapping the lifecycle showed me this was an escalation system. That one insight shaped every screen after it.</li>
+                    <li><b>Scope is a design decision</b>With a fixed timeline, saying no early with MoSCoW protected the things that mattered.</li>
+                    <li><b>Measure reaction time, not preference</b>In clinical tools, "which do you like?" is the wrong question. "How fast did you find it?" is the right one.</li>
+                    <li><b>Alignment is speed</b>A shared vision and short feedback loops made approvals fast, and helped a top-down team trust a user-centred process.</li>
+                </ul>
+            </section>
+
+            <!-- Principles -->
+            <section class="case-section" id="principles">
+                <h2>Principles used</h2>
+                <p>The UX principles behind the decisions above. Tap any one to see how it applied.</p>
+                <div class="cs-gloss">
+                    <details id="p-preattentive"><summary>Preattentive processing<small>Perception</small></summary><div><p>The eye spots colour, size and motion before we consciously read. Alerts use all three so they're seen in a fraction of a second.</p></div></details>
+                    <details id="p-fatigue"><summary>Alarm fatigue<small>Clinical safety</small></summary><div><p>Too many alerts, and people stop reacting to any of them. Only critical events are allowed to interrupt.</p></div></details>
+                    <details id="p-status"><summary>Visibility of system status<small>Nielsen #1</small></summary><div><p>Everyone always knows what's happening: who has the alert, how long it's been, and when it will escalate.</p></div></details>
+                    <details id="p-colour"><summary>Not colour alone<small>WCAG 1.4.1</small></summary><div><p>Red is backed up by words, position and icons, so colour-blind staff and poor screens never hide an alert.</p></div></details>
+                    <details id="p-load"><summary>Cognitive load<small>Working memory</small></summary><div><p>Five key vitals, not fifty data points. Less to process means faster, safer decisions.</p></div></details>
+                    <details id="p-progressive"><summary>Progressive disclosure<small>Complexity</small></summary><div><p>Show what's needed now and reveal more on request. Nurses get the essentials, doctors can dig deeper.</p></div></details>
+                    <details id="p-hicks"><summary>Hick's law<small>Decision time</small></summary><div><p>Fewer choices, faster decisions. The SOS screen offers one primary action and one fallback.</p></div></details>
+                    <details id="p-fitts"><summary>Fitts's law<small>Target size</small></summary><div><p>The actions you need under pressure are large and sit right next to the alert.</p></div></details>
+                    <details id="p-recognition"><summary>Recognition over recall<small>Nielsen #6</small></summary><div><p>Limits, history and context sit beside each reading, so nobody has to remember what "normal" is for this patient.</p></div></details>
+                    <details id="p-consistency"><summary>Consistency and standards<small>Nielsen #4</small></summary><div><p>Same severity colours, same layout logic across nurse and doctor views, so moving between them costs nothing.</p></div></details>
+                </div>
+
+                <a class="next-case" href="Case1.html">
+                    <small>Next case study</small>
+                    <span>Clear Breath</span>
+                </a>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="site.js" defer></script>
+</body>
+
+</html>

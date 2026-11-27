@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tallybird — Raghav Prasanna</title>
+    <meta name="description" content="Tallybird case study: redesigning a UK Self Assessment tax filing web app. Self-filed returns went from 7,934 to 24,072 in a year.">
+
+    <meta property="og:title" content="Tallybird — Simplifying taxes for everyone">
+    <meta property="og:description" content="Product design case study: the full redesign of Tallybird's Self Assessment filing web app, and a 3× jump in self-filed returns.">
+    <meta property="og:image" content="images/case/tb-cover.svg">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" href="logo.png" type="image/png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preload" href="Fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf" as="font" type="font/ttf" crossorigin>
+    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v})}catch(e){}</script>
+    <link rel="stylesheet" href="site.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="site-id">
+            <button class="avatar-ring" type="button" data-stories aria-label="View Raghav's stories"><img src="images/bwme.png" alt="" width="44" height="44" decoding="async"></button>
+            <div class="site-id-text">
+                <a class="site-name" href="./">Raghav Prasanna<span class="verified" role="img" aria-label="Verified"></span></a>
+                <span class="site-loc">London, UK</span>
+            </div>
+        </div>
+        <nav class="site-nav" aria-label="Main">
+            <a href="about.html">About</a>
+            <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
+            <span class="site-clock"><time data-clock>--:--</time></span>
+        </nav>
+    </header>
+
+    <div class="shell">
+
+        <aside class="side case-side">
+            <a class="back-link" href="./">Back to home</a>
+            <ul class="tags"><li>Fintech</li><li>Web app</li><li>Shipped</li></ul>
+            <h1 class="case-title">Tallybird</h1>
+            <p class="case-lede">Redesigning Self Assessment tax filing in the UK so people could finish on their own. Self-filed returns went up 3×.</p>
+            <nav aria-label="On this page">
+                <ul class="toc">
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#users">Who files</a></li>
+                    <li><a href="#filing">How filing works</a></li>
+                    <li><a href="#problem">What was broken</a></li>
+                    <li><a href="#moments">Where people quit</a></li>
+                    <li><a href="#goals">Design goals</a></li>
+                    <li><a href="#impact">Impact</a></li>
+                    <li><a href="#learnings">What I learned</a></li>
+                    <li><a href="#principles">Principles used</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="case-body">
+
+            <!-- Overview -->
+            <section class="case-section" id="overview">
+                <h2>Overview</h2>
+                <p class="cs-lead">Nobody enjoys doing their taxes. The software shouldn't make it worse.</p>
+                <p>
+                    Tallybird is a London fintech that helps people across the UK file their Self Assessment tax return online. The first version did its job.
+                    But years of new features had stacked up, and people were getting lost halfway through.
+                </p>
+                <p>
+                    I spent three months redesigning the filing web app end to end: the structure, the flows and the
+                    visual language. Here's why we did it, and how.
+                </p>
+
+                <figure class="case-figure">
+                    <img src="images/case/tb-cover.svg" alt="The redesigned filing screen: an expandable Income menu on the left showing five income types with amounts, and a UK property form with pre-shown options on the right" loading="eager" decoding="async">
+                    <figcaption>The shipped design. Every income type is visible in the menu, and the next action is always obvious.</figcaption>
+                </figure>
+
+                <dl class="meta-list">
+                    <dt>Role</dt>
+                    <dd>Product designer</dd>
+                    <dt>Timeline</dt>
+                    <dd>3 months</dd>
+                    <dt>Team</dt>
+                    <dd>A product manager, four engineers, and me</dd>
+                    <dt>What I did</dt>
+                    <dd>UX research · Information architecture · Prototyping · User testing · Product strategy · Visual design</dd>
+                </dl>
+
+                <div class="metric-grid">
+                    <div class="metric"><span class="n">3×</span><span class="d">more returns filed without a tax expert</span></div>
+                    <div class="metric"><span class="n">24,072</span><span class="d">self-filed returns in the 2021-22 tax year, up from 7,934</span></div>
+                    <div class="metric"><span class="n">3 months</span><span class="d">from research to the shipped redesign</span></div>
+                </div>
+            </section>
+
+            <!-- Users -->
+            <section class="case-section" id="users">
+                <h2>Who files with Tallybird</h2>
+                <p>
+                    Tallybird is a software-as-a-service platform for individuals and small businesses. It handles tax
+                    filing today, and the company wanted it to handle tax planning next.
+                </p>
+                <p>
+                    The user is anyone in the UK who has to file Self Assessment. Freelancers. Landlords. Sole traders.
+                    Company directors. Employees with a side income. People with one income, and people with five.
+                </p>
+
+                <div class="cs-persona">
+                    <div class="cs-quote">
+                        <p>“Just tell me what to do next, and tell me I got it right.”</p>
+                        <small>The average Self Assessment filer, in one line</small>
+                    </div>
+                    <div>
+                        <h4>What they need</h4>
+                        <ul>
+                            <li>A clear path from start to filed</li>
+                            <li>Plain words, not tax jargon</li>
+                            <li>Confidence that the final number is correct</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>What gets in the way</h4>
+                        <ul>
+                            <li>They file once a year and forget everything in between</li>
+                            <li>Several income sources, each with its own rules</li>
+                            <li>Fear of a mistake, and of a penalty letter from HMRC</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How filing works -->
+            <section class="case-section" id="filing">
+                <h2>How filing works</h2>
+                <p>
+                    Before the design, the domain. Filing a Self Assessment tax return with HMRC comes down to four steps.
+                    Tap through them.
+                </p>
+
+                <div class="stages cs-flow">
+                    <div class="stage-tabs" role="tablist" aria-label="Steps to file an income tax return">
+                        <button type="button" class="stage-tab" role="tab"><small>Step 1</small><b>Add income</b></button>
+                        <button type="button" class="stage-tab" role="tab"><small>Step 2</small><b>Claim reliefs</b></button>
+                        <button type="button" class="stage-tab" role="tab"><small>Step 3</small><b>Review</b></button>
+                        <button type="button" class="stage-tab" role="tab"><small>Step 4</small><b>File</b></button>
+                    </div>
+                    <div class="stage-panels">
+                        <div class="stage-panel" role="tabpanel">
+                            <h4>Add up every income</h4>
+                            <p>Pull together everything you earned in the tax year. The return splits it into sections like these:</p>
+                            <ul>
+                                <li>Employment</li>
+                                <li>Self-employment</li>
+                                <li>UK property</li>
+                                <li>Savings and dividends</li>
+                                <li>Capital gains</li>
+                            </ul>
+                        </div>
+                        <div class="stage-panel" role="tabpanel" hidden>
+                            <h4>Claim reliefs and allowances</h4>
+                            <p>Bring the taxable amount down with what you're allowed to claim: allowable expenses, pension contributions, Gift Aid, and tax already taken through PAYE.</p>
+                        </div>
+                        <div class="stage-panel" role="tabpanel" hidden>
+                            <h4>Review everything</h4>
+                            <p>Check every figure against your documents. This is where earlier mistakes surface, and where most people get stuck.</p>
+                        </div>
+                        <div class="stage-panel" role="tabpanel" hidden>
+                            <h4>Submit to HMRC</h4>
+                            <p>Submit the return before the 31 January deadline and see what you owe. Done for the year.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note">Each step leans on the one before it. Miss something in step 1 and it only shows up as an error in step 3. That single fact shaped most of the redesign.</div>
+            </section>
+
+            <!-- Problem -->
+            <section class="case-section" id="problem">
+                <h2>What was broken</h2>
+                <p>
+                    The original product had done what it set out to do. But over time it collected <strong>design debt
+                    and engineering debt</strong>: patches on patches, no shared design language, and flows that no
+                    longer matched how people actually filed.
+                </p>
+
+                <div class="cs-grid2">
+                    <div class="cs-card">
+                        <h4><span>01</span>Navigation</h4>
+                        <p>The structure was unclear, and some features existed twice. People lost their place, and with it the context of what they were doing.</p>
+                        <ul class="cs-chips"><li><a href="#p-recognition">Recognition over recall</a></li><li><a href="#p-status">Visibility of system status</a></li></ul>
+                    </div>
+                    <div class="cs-card">
+                        <h4><span>02</span>Discoverability</h4>
+                        <p>No clear primary action. Input fields faded into the page. People couldn't tell what to click, so they hesitated.</p>
+                        <ul class="cs-chips"><li><a href="#p-signifiers">Signifiers</a></li><li><a href="#p-fitts">Fitts's law</a></li></ul>
+                    </div>
+                    <div class="cs-card">
+                        <h4><span>03</span>Visual hierarchy</h4>
+                        <p>In testing, people kept getting confused. Everything looked equally important, so nothing stood out.</p>
+                        <ul class="cs-chips"><li><a href="#p-hierarchy">Visual hierarchy</a></li><li><a href="#p-vonrestorff">Von Restorff effect</a></li></ul>
+                    </div>
+                    <div class="cs-card">
+                        <h4><span>04</span>Scalability</h4>
+                        <p>The business was moving into tax planning. The old structure couldn't hold filing and planning side by side without a rebuild.</p>
+                        <ul class="cs-chips"><li><a href="#p-progressive">Progressive disclosure</a></li><li><a href="#p-consistency">Consistency</a></li></ul>
+                    </div>
+                </div>
+
+                <h3>Finding where it hurt</h3>
+                <p>
+                    I didn't want to redesign from opinion. So I pulled together every signal we had: session
+                    recordings, funnels, support tickets and our own testing sessions.
+                </p>
+                <div class="cs-research" role="img" aria-label="Diagram: Hotjar, FullStory, Zendesk and user testing feed into synthesis, which produced three drop-off moments">
+                    <div class="col">
+                        <div class="box">Hotjar<small>Heatmaps, recordings</small></div>
+                        <div class="box">FullStory<small>Session replays, funnels</small></div>
+                        <div class="box">Zendesk<small>Support tickets</small></div>
+                        <div class="box">User testing<small>Moderated sessions</small></div>
+                    </div>
+                    <span class="arrow" aria-hidden="true"></span>
+                    <div class="col"><div class="box">Synthesis<small>Patterns across sources</small></div></div>
+                    <span class="arrow" aria-hidden="true"></span>
+                    <div class="col"><div class="box is-key">3 drop-off moments<small>Where people gave up</small></div></div>
+                </div>
+            </section>
+
+            <!-- Moments -->
+            <section class="case-section" id="moments">
+                <h2>Three moments people quit</h2>
+                <p>
+                    The data kept pointing at the same three screens. For each one, drag the slider to compare the old
+                    product with what we shipped. The numbered pins match the notes underneath.
+                </p>
+
+                <!-- Moment 1 -->
+                <div class="cs-pain">
+                    <div class="cs-pain-head"><span class="n">01</span><h3>“Wait, where am I?”</h3></div>
+                    <div class="cs-compare" data-compare>
+                        <div class="cs-frame">
+                            <div class="cs-screen is-before" aria-hidden="true">
+                                <div class="cs-app is-old">
+                                    <div class="cs-top"><b>tallybird</b><span>Dashboard</span><span>Tax filing</span><span>Help</span><i></i></div>
+                                    <div class="cs-body">
+                                        <div class="cs-nav">
+                                            <span>Personal info</span>
+                                            <span class="on cs-anchor"><span class="cs-pin" aria-hidden="true">1</span>Income</span>
+                                            <span>Reliefs</span>
+                                            <span>Tax paid</span>
+                                            <span>Summary</span>
+                                        </div>
+                                        <div class="cs-main">
+                                            <p class="cs-h">UK Property</p>
+                                            <div class="cs-fields cs-anchor"><span class="cs-pin" aria-hidden="true">2</span>
+                                                <div class="cs-field"><label>Type</label><i>Select</i></div>
+                                                <div class="cs-field"><label>Rent received</label><i>0</i></div>
+                                                <div class="cs-field"><label>Agent fees</label><i>0</i></div>
+                                                <div class="cs-field"><label>Mortgage interest</label><i>0</i></div>
+                                                <div class="cs-field"><label>Co-owner share</label><i>0</i></div>
+                                                <div class="cs-field"><label>Address</label><i></i></div>
+                                            </div>
+                                            <span class="cs-btn">Save</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cs-screen is-after" aria-hidden="true">
+                                <div class="cs-app">
+                                    <div class="cs-top"><b>tallybird</b><span>Filing</span><span>Planning</span><span>Help</span><i></i></div>
+                                    <div class="cs-body">
+                                        <div class="cs-nav">
+                                            <span class="done"><i class="cs-ok"></i>Personal info</span>
+                                            <span class="done"><i class="cs-cur"></i>Income<i class="cs-chev"></i><em>£60,440</em></span>
+                                            <div class="cs-sub cs-anchor"><span class="cs-pin is-good" aria-hidden="true">1</span>
+                                                <span>Employment<em>£42,300</em></span>
+                                                <span class="on">UK property</span>
+                                                <span>Self-employment<em>—</em></span>
+                                                <span>Savings &amp; dividends<em>£640</em></span>
+                                                <span>Capital gains<em>£3,100</em></span>
+                                            </div>
+                                            <span><i class="cs-todo"></i>Reliefs</span>
+                                            <span><i class="cs-todo"></i>Tax paid</span>
+                                            <span><i class="cs-todo"></i>Review &amp; submit</span>
+                                        </div>
+                                        <div class="cs-main">
+                                            <span class="cs-crumb">Income / UK property</span>
+                                            <p class="cs-h">How do you let this property?</p>
+                                            <div class="cs-row cs-anchor"><span class="cs-pin is-good" aria-hidden="true">2</span>
+                                                <span class="cs-choice on">Standard let</span>
+                                                <span class="cs-choice">Rent a Room</span>
+                                                <span class="cs-choice">Furnished holiday let</span>
+                                            </div>
+                                            <div class="cs-fields">
+                                                <div class="cs-field"><label>Rent received this year</label><i>£ 14,400</i></div>
+                                                <div class="cs-field"><label>Your share of ownership</label><i>100%</i></div>
+                                            </div>
+                                            <span class="cs-btn">Save &amp; continue</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="cs-handle" aria-hidden="true"></span>
+                            <span class="cs-tag is-l">Before</span>
+                            <span class="cs-tag is-r">After</span>
+                            <input type="range" min="0" max="100" value="50" aria-label="Compare old and new income screen. Slide right to see more of the old design.">
+                        </div>
+                        <div class="cs-compare-bar">
+                            <div class="cs-seg" role="group" aria-label="Show">
+                                <button type="button" data-pos="100">Before</button>
+                                <button type="button" data-pos="50">Split</button>
+                                <button type="button" data-pos="0">After</button>
+                            </div>
+                            <span class="cs-hint">Drag the handle to compare</span>
+                        </div>
+                    </div>
+                    <div class="cs-notes">
+                        <div>
+                            <h4>Before</h4>
+                            <ol>
+                                <li><span class="cs-num">1</span><span>You're in UK property, but nothing says so. Nothing hints that Income has five parts, either.</span></li>
+                                <li><span class="cs-num">2</span><span>Pale, empty fields. You have to know what to type before you start.</span></li>
+                            </ol>
+                        </div>
+                        <div class="is-good">
+                            <h4>After</h4>
+                            <ol>
+                                <li><span class="cs-num">1</span><span>The menu expands to show every income type with its running total. You always know where you are.</span></li>
+                                <li><span class="cs-num">2</span><span>Options are shown up front and sensible defaults are pre-filled. Pick, don't type.</span></li>
+                            </ol>
+                            <ul class="cs-chips"><li><a href="#p-status">Visibility of system status</a></li><li><a href="#p-recognition">Recognition over recall</a></li></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moment 2 -->
+                <div class="cs-pain">
+                    <div class="cs-pain-head"><span class="n">02</span><h3>“I thought I was done.”</h3></div>
+                    <div class="cs-compare" data-compare>
+                        <div class="cs-frame">
+                            <div class="cs-screen is-before" aria-hidden="true">
+                                <div class="cs-app is-old">
+                                    <div class="cs-top"><b>tallybird</b><span>Dashboard</span><span>Tax filing</span><span>Help</span><i></i></div>
+                                    <div class="cs-body">
+                                        <div class="cs-nav">
+                                            <span>Personal info</span>
+                                            <span class="on">Income</span>
+                                            <span>Reliefs</span>
+                                            <span>Tax paid</span>
+                                            <span>Summary</span>
+                                        </div>
+                                        <div class="cs-main">
+                                            <p class="cs-h cs-anchor"><span class="cs-pin" aria-hidden="true">1</span>UK Property Summary</p>
+                                            <div class="cs-tiles cs-anchor"><span class="cs-pin" aria-hidden="true">2</span>
+                                                <div class="cs-tile"><b>Property details</b><span>Add</span></div>
+                                                <div class="cs-tile"><b>Mortgage interest</b><span>Add</span></div>
+                                                <div class="cs-tile"><b>Joint owners</b><span>Add</span></div>
+                                                <div class="cs-tile"><b>Expenses</b><span>Add</span></div>
+                                            </div>
+                                            <span class="cs-btn is-end cs-anchor"><span class="cs-pin" aria-hidden="true">3</span>Next</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cs-screen is-after" aria-hidden="true">
+                                <div class="cs-app">
+                                    <div class="cs-top"><b>tallybird</b><span>Filing</span><span>Planning</span><span>Help</span><i></i></div>
+                                    <div class="cs-body">
+                                        <div class="cs-nav">
+                                            <span class="done"><i class="cs-ok"></i>Personal info</span>
+                                            <span class="done"><i class="cs-cur"></i>Income<i class="cs-chev"></i><em>£60,440</em></span>
+                                            <div class="cs-sub">
+                                                <span>Employment<em>£42,300</em></span>
+                                                <span class="on">UK property</span>
+                                                <span>Self-employment<em>—</em></span>
+                                                <span>Savings &amp; dividends<em>£640</em></span>
+                                                <span>Capital gains<em>£3,100</em></span>
+                                            </div>
+                                            <span><i class="cs-todo"></i>Reliefs</span>
+                                            <span><i class="cs-todo"></i>Tax paid</span>
+                                            <span><i class="cs-todo"></i>Review &amp; submit</span>
+                                        </div>
+                                        <div class="cs-main">
+                                            <div class="cs-steps cs-anchor"><span class="cs-pin is-good" aria-hidden="true">1</span>
+                                                <span class="on"><i class="cs-cur"></i>Income</span><hr>
+                                                <span><i class="cs-todo"></i>Reliefs</span><hr>
+                                                <span><i class="cs-todo"></i>Tax paid</span><hr>
+                                                <span><i class="cs-todo"></i>Review</span>
+                                            </div>
+                                            <p class="cs-h">UK property summary</p>
+                                            <div class="cs-group">
+                                                <b>Needed to file<em>2 left</em></b>
+                                                <div class="cs-req cs-anchor"><span class="cs-pin is-good" aria-hidden="true">2</span><span>Property address</span><small>Required</small><span class="go">Add</span></div>
+                                                <div class="cs-req"><span>Rent received</span><small>Required</small><span class="go">Add</span></div>
+                                            </div>
+                                            <div class="cs-group">
+                                                <b>Optional</b>
+                                                <div class="cs-opt cs-anchor"><span class="cs-pin is-good" aria-hidden="true">3</span>Joint owners<span class="go">Add</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="cs-handle" aria-hidden="true"></span>
+                            <span class="cs-tag is-l">Before</span>
+                            <span class="cs-tag is-r">After</span>
+                            <input type="range" min="0" max="100" value="50" aria-label="Compare old and new property summary screen. Slide right to see more of the old design.">
+                        </div>
+                        <div class="cs-compare-bar">
+                            <div class="cs-seg" role="group" aria-label="Show">
+                                <button type="button" data-pos="100">Before</button>
+                                <button type="button" data-pos="50">Split</button>
+                                <button type="button" data-pos="0">After</button>
+                            </div>
+                            <span class="cs-hint">Drag the handle to compare</span>
+                        </div>
+                    </div>
+                    <div class="cs-notes">
+                        <div>
+                            <h4>Before</h4>
+                            <ol>
+                                <li><span class="cs-num">1</span><span>No sense of progress. Is this step two, or step twelve?</span></li>
+                                <li><span class="cs-num">2</span><span>Required and optional cards look identical. People skipped the required ones, then hit errors at the very end. This was one of the biggest causes of drop-off.</span></li>
+                                <li><span class="cs-num">3</span><span>“Next” lets you move on with missing information.</span></li>
+                            </ol>
+                        </div>
+                        <div class="is-good">
+                            <h4>After</h4>
+                            <ol>
+                                <li><span class="cs-num">1</span><span>A stepper shows where you are in the whole filing.</span></li>
+                                <li><span class="cs-num">2</span><span>Required items are flagged, counted and grouped first. Mistakes get caught here, not at submit.</span></li>
+                                <li><span class="cs-num">3</span><span>Optional items step back visually, so they don't compete for attention.</span></li>
+                            </ol>
+                            <ul class="cs-chips"><li><a href="#p-error">Error prevention</a></li><li><a href="#p-vonrestorff">Von Restorff effect</a></li><li><a href="#p-goal">Goal-gradient effect</a></li></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moment 3 -->
+                <div class="cs-pain">
+                    <div class="cs-pain-head"><span class="n">03</span><h3>“What am I supposed to click?”</h3></div>
+                    <div class="cs-compare" data-compare>
+                        <div class="cs-frame">
+                            <div class="cs-screen is-before" aria-hidden="true">
+                                <div class="cs-app is-old">
+                                    <div class="cs-top"><b>tallybird</b><span>Dashboard</span><span>Tax filing</span><span>Help</span><i></i></div>
+                                    <div class="cs-body">
+                                        <div class="cs-nav">
+                                            <span>Personal info</span>
+                                            <span class="on">Income</span>
+                                            <span>Reliefs</span>
+                                            <span>Tax paid</span>
+                                            <span>Summary</span>
+                                        </div>
+                                        <div class="cs-main">
+                                            <p class="cs-h">Add UK Property</p>
+                                            <div class="cs-illos cs-anchor"><span class="cs-pin" aria-hidden="true">1</span>
+                                                <div class="cs-illo-card"><div class="cs-illo"><i class="cs-house"></i></div>Standard Let</div>
+                                                <div class="cs-illo-card"><div class="cs-illo"><i class="cs-house"></i></div>Rent A Room</div>
+                                                <div class="cs-illo-card cs-anchor"><span class="cs-pin" aria-hidden="true">2</span><div class="cs-illo"><i class="cs-house"></i></div>Furnished Holiday Let</div>
+                                            </div>
+                                            <span class="cs-btn is-end cs-anchor"><span class="cs-pin" aria-hidden="true">3</span>Next</span>
+                                        </div>
+                                    </div>
+                                    <i class="cs-cloud"></i>
+                                </div>
+                            </div>
+                            <div class="cs-screen is-after" aria-hidden="true">
+                                <div class="cs-app">
+                                    <div class="cs-top"><b>tallybird</b><span>Filing</span><span>Planning</span><span>Help</span><i></i></div>
+                                    <div class="cs-body">
+                                        <div class="cs-nav">
+                                            <span class="done"><i class="cs-ok"></i>Personal info</span>
+                                            <span class="done"><i class="cs-cur"></i>Income<i class="cs-chev"></i><em>£60,440</em></span>
+                                            <div class="cs-sub">
+                                                <span>Employment<em>£42,300</em></span>
+                                                <span class="on">UK property</span>
+                                                <span>Self-employment<em>—</em></span>
+                                                <span>Savings &amp; dividends<em>£640</em></span>
+                                                <span>Capital gains<em>£3,100</em></span>
+                                            </div>
+                                            <span><i class="cs-todo"></i>Reliefs</span>
+                                            <span><i class="cs-todo"></i>Tax paid</span>
+                                            <span><i class="cs-todo"></i>Review &amp; submit</span>
+                                        </div>
+                                        <div class="cs-main">
+                                            <span class="cs-crumb">Income / UK property</span>
+                                            <p class="cs-h">How do you let this property?</p>
+                                            <div class="cs-radios cs-anchor"><span class="cs-pin is-good" aria-hidden="true">1</span>
+                                                <div class="cs-radio on"><b>Standard let</b><span>Tenants rent it on a lease</span></div>
+                                                <div class="cs-radio"><b>Rent a Room</b><span>A lodger in the home you live in</span></div>
+                                                <div class="cs-radio"><b>Furnished holiday let</b><span>Short stays, let 105+ days a year</span></div>
+                                            </div>
+                                            <div class="cs-tip cs-anchor"><span class="cs-pin is-good" aria-hidden="true">2</span>Not sure? If tenants live there on a lease, pick Standard let.</div>
+                                            <span class="cs-btn cs-anchor"><span class="cs-pin is-good" aria-hidden="true">3</span>Continue</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="cs-handle" aria-hidden="true"></span>
+                            <span class="cs-tag is-l">Before</span>
+                            <span class="cs-tag is-r">After</span>
+                            <input type="range" min="0" max="100" value="50" aria-label="Compare old and new property type screen. Slide right to see more of the old design.">
+                        </div>
+                        <div class="cs-compare-bar">
+                            <div class="cs-seg" role="group" aria-label="Show">
+                                <button type="button" data-pos="100">Before</button>
+                                <button type="button" data-pos="50">Split</button>
+                                <button type="button" data-pos="0">After</button>
+                            </div>
+                            <span class="cs-hint">Drag the handle to compare</span>
+                        </div>
+                    </div>
+                    <div class="cs-notes">
+                        <div>
+                            <h4>Before</h4>
+                            <ol>
+                                <li><span class="cs-num">1</span><span>Big illustrations steal attention from the actual choice.</span></li>
+                                <li><span class="cs-num">2</span><span>The labels are tiny and unexplained. What counts as a “furnished holiday let”?</span></li>
+                                <li><span class="cs-num">3</span><span>The button is pale and tucked away in a corner.</span></li>
+                            </ol>
+                        </div>
+                        <div class="is-good">
+                            <h4>After</h4>
+                            <ol>
+                                <li><span class="cs-num">1</span><span>Three equal options, so no choice looks more “right” than the others.</span></li>
+                                <li><span class="cs-num">2</span><span>A plain-language line under each one, plus a hint for the unsure.</span></li>
+                                <li><span class="cs-num">3</span><span>One clear primary button, right where your eye lands next.</span></li>
+                            </ol>
+                            <ul class="cs-chips"><li><a href="#p-minimal">Aesthetic and minimalist design</a></li><li><a href="#p-hicks">Hick's law</a></li><li><a href="#p-fitts">Fitts's law</a></li></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="margin-top:56px">
+                    Put together, the drop-off data and the new tax planning scope made the call for us. Patching wasn't
+                    enough. The product needed a full redesign and rebuild.
+                </p>
+            </section>
+
+            <!-- Goals -->
+            <section class="case-section" id="goals">
+                <h2>Design goals</h2>
+                <p class="cs-lead">Make it simple, but significant.</p>
+                <p>
+                    The hard part of tax software isn't the visuals. It's taking a mountain of required information and
+                    making it feel small. Before drawing a single screen, I agreed three rules with the team. Every
+                    design decision had to pass all three.
+                </p>
+
+                <div class="cs-goals">
+                    <div class="cs-goal">
+                        <h4>Always show the next step</h4>
+                        <p>Intuitive and transparent. At any point, you know where you are, what's left, and what to do now.</p>
+                        <ul class="cs-chips"><li><a href="#p-status">Visibility of system status</a></li><li><a href="#p-goal">Goal-gradient effect</a></li></ul>
+                    </div>
+                    <div class="cs-goal">
+                        <h4>Fewer clicks, less time</h4>
+                        <p>Cut every click that doesn't earn its place. Fewer steps means less time on task, and fewer chances to give up.</p>
+                        <ul class="cs-chips"><li><a href="#p-hicks">Hick's law</a></li><li><a href="#p-fitts">Fitts's law</a></li><li><a href="#p-progressive">Progressive disclosure</a></li></ul>
+                    </div>
+                    <div class="cs-goal">
+                        <h4>Earn trust</h4>
+                        <p>People are handing over their finances. A calm, consistent interface that catches mistakes early makes them believe the final number.</p>
+                        <ul class="cs-chips"><li><a href="#p-aesthetic">Aesthetic-usability effect</a></li><li><a href="#p-consistency">Consistency</a></li><li><a href="#p-error">Error prevention</a></li></ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Impact -->
+            <section class="case-section" id="impact">
+                <h2>Impact</h2>
+                <p>
+                    After the redesign of these data-heavy layouts, the number of people filing on their own, without
+                    help from a tax expert, tripled in a single year.
+                </p>
+
+                <div class="cs-impact" data-impact>
+                    <div class="cs-impact-top">
+                        <div class="cs-big"><span data-count-to="3.03" data-decimals="1">3.0</span>×<small>self-filed returns</small></div>
+                        <p>Returns filed through Tallybird by users on their own, without a tax expert's help.</p>
+                    </div>
+                    <div class="cs-bars">
+                        <div class="cs-bar">
+                            <span>2020-21</span>
+                            <div class="cs-track"><div class="cs-fill" style="--w:33%"><span data-count-to="7934">7,934</span></div></div>
+                        </div>
+                        <div class="cs-bar is-new">
+                            <span>2021-22</span>
+                            <div class="cs-track"><div class="cs-fill" style="--w:100%"><span data-count-to="24072">24,072</span></div></div>
+                        </div>
+                    </div>
+                </div>
+                <p style="margin-top:24px">And a handful of people took the time to tweet about it, which honestly made my week.</p>
+            </section>
+
+            <!-- Learnings -->
+            <section class="case-section" id="learnings">
+                <h2>What I learned</h2>
+                <ul class="cs-learn">
+                    <li><b>Learn the domain first</b>I had no fintech background. I had to learn how UK Self Assessment actually works before I could simplify it for anyone else.</li>
+                    <li><b>Know the business, not just the user</b>Sitting with stakeholders showed me the targets behind the brief, and why tax planning mattered so much.</li>
+                    <li><b>Behaviour beats opinion</b>Watching real sessions told me more than any guess. Tracking patterns kept our goals honest.</li>
+                    <li><b>Design is a team sport</b>The data lived with different teams. Staying in constant contact with them was the only way to see the full picture.</li>
+                    <li><b>Ship, test, adjust, repeat</b>Every feedback session changed something. Keep testing until you understand your users, then test again.</li>
+                </ul>
+            </section>
+
+            <!-- Principles -->
+            <section class="case-section" id="principles">
+                <h2>Principles used</h2>
+                <p>The UX principles behind the decisions above. Tap any one to read what it means here.</p>
+                <div class="cs-gloss">
+                    <details id="p-status"><summary>Visibility of system status<small>Nielsen #1</small></summary><div><p>Always tell people what's going on. The expandable menu, running totals and the stepper all answer “where am I, and what's left?”</p></div></details>
+                    <details id="p-recognition"><summary>Recognition over recall<small>Nielsen #6</small></summary><div><p>Show options instead of making people remember them. Pre-shown property types beat an empty dropdown.</p></div></details>
+                    <details id="p-error"><summary>Error prevention<small>Nielsen #5</small></summary><div><p>Better than a good error message is no error at all. Flagging required items early stopped failures at submit.</p></div></details>
+                    <details id="p-minimal"><summary>Aesthetic and minimalist design<small>Nielsen #8</small></summary><div><p>Every extra element competes with the ones that matter. The decorative illustrations had to go.</p></div></details>
+                    <details id="p-consistency"><summary>Consistency and standards<small>Nielsen #4</small></summary><div><p>One design language across filing and planning, so learning one part teaches you the rest.</p></div></details>
+                    <details id="p-hierarchy"><summary>Visual hierarchy<small>Gestalt</small></summary><div><p>Size, weight, colour and position tell people what to look at first. If everything is loud, nothing is.</p></div></details>
+                    <details id="p-vonrestorff"><summary>Von Restorff effect<small>Isolation effect</small></summary><div><p>The thing that looks different gets remembered. Required items get a distinct style so they can't be missed.</p></div></details>
+                    <details id="p-hicks"><summary>Hick's law<small>Decision time</small></summary><div><p>More choices, slower decisions. Each screen asks one question with a few clear answers.</p></div></details>
+                    <details id="p-fitts"><summary>Fitts's law<small>Target size</small></summary><div><p>Big, nearby targets are faster to hit. The primary button sits where the eye and cursor already are.</p></div></details>
+                    <details id="p-goal"><summary>Goal-gradient effect<small>Motivation</small></summary><div><p>People speed up as they near the finish. Showing progress, and “2 left”, keeps them going.</p></div></details>
+                    <details id="p-progressive"><summary>Progressive disclosure<small>Complexity</small></summary><div><p>Show only what's needed now, reveal the rest when it's relevant. It's how filing and planning fit in one product.</p></div></details>
+                    <details id="p-signifiers"><summary>Signifiers<small>Don Norman</small></summary><div><p>Things should look like what they do. Fields need to look like fields, and buttons like buttons.</p></div></details>
+                    <details id="p-aesthetic"><summary>Aesthetic-usability effect<small>Trust</small></summary><div><p>People trust, and forgive, interfaces that look considered. With money involved, that trust matters.</p></div></details>
+                </div>
+
+                <a class="next-case" href="carerelay.html">
+                    <small>Next case study</small>
+                    <span>CareRelay</span>
+                </a>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="site.js" defer></script>
+</body>
+
+</html>

@@ -279,6 +279,309 @@
         });
     })();
 
+    /* ---------- Before / after reveal (drag, arrow keys, or the Before/Split/After buttons) ---------- */
+    document.querySelectorAll("[data-compare]").forEach(function (root) {
+        var range = root.querySelector("input[type=range]");
+        var buttons = Array.prototype.slice.call(root.querySelectorAll("[data-pos]"));
+        var timer = 0;
+        function set(v, animate) {
+            v = Math.max(0, Math.min(100, Number(v)));
+            if (animate) {
+                root.classList.add("is-animating");
+                clearTimeout(timer);
+                timer = setTimeout(function () { root.classList.remove("is-animating"); }, 620);
+            }
+            root.style.setProperty("--pos", v + "%");
+            range.value = v;
+            range.setAttribute("aria-valuetext", v >= 98 ? "Before" : v <= 2 ? "After" : "Split view");
+            buttons.forEach(function (b) {
+                var p = Number(b.getAttribute("data-pos"));
+                b.setAttribute("aria-pressed", Math.abs(p - v) < 2 ? "true" : "false");
+            });
+        }
+        range.addEventListener("input", function () { set(range.value, false); });
+        buttons.forEach(function (b) {
+            b.addEventListener("click", function () { set(b.getAttribute("data-pos"), true); });
+        });
+        set(range.value, false);
+    });
+
+    /* ---------- Impact bars + counters: run once when scrolled into view ---------- */
+    document.querySelectorAll("[data-impact]").forEach(function (root) {
+        var counters = Array.prototype.slice.call(root.querySelectorAll("[data-count-to]"));
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+            document.documentElement.dataset.motion === "reduce";
+        function format(n, decimals) {
+            return decimals ? n.toFixed(decimals) : Math.round(n).toLocaleString("en-IN");
+        }
+        function run() {
+            root.classList.add("is-in");
+            counters.forEach(function (el) {
+                var to = parseFloat(el.getAttribute("data-count-to"));
+                var dec = parseInt(el.getAttribute("data-decimals") || "0", 10);
+                if (reduce) { el.textContent = format(to, dec); return; }
+                var start = performance.now(), dur = 1200;
+                (function step(t) {
+                    var k = Math.min(1, (t - start) / dur);
+                    var eased = 1 - Math.pow(1 - k, 3);
+                    el.textContent = format(to * eased, dec);
+                    if (k < 1) requestAnimationFrame(step);
+                })(start);
+            });
+        }
+        if (!("IntersectionObserver" in window)) { run(); return; }
+        var io = new IntersectionObserver(function (entries) {
+            if (entries.some(function (e) { return e.isIntersecting; })) { run(); io.disconnect(); }
+        }, { threshold: 0.35 });
+        io.observe(root);
+    });
+
+    /* ---------- Principle chips open their glossary entry ---------- */
+    document.addEventListener("click", function (e) {
+        var a = e.target.closest && e.target.closest('a[href^="#p-"]');
+        if (!a) return;
+        var target = document.getElementById(a.getAttribute("href").slice(1));
+        if (!target || target.tagName !== "DETAILS") return;
+        e.preventDefault();
+        target.open = true;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.add("is-flash");
+        setTimeout(function () { target.classList.remove("is-flash"); }, 1400);
+        history.replaceState(null, "", "#" + target.id);
+    });
+    if (/^#p-/.test(location.hash)) {
+        var g = document.getElementById(location.hash.slice(1));
+        if (g && g.tagName === "DETAILS") g.open = true;
+    }
+
+
+    /* ---------- Escalation simulator: P1 nurse -> P2 supervisor -> P3 doctor ---------- */
+    document.querySelectorAll("[data-escalation]").forEach(function (root) {
+        var WINDOW = 8000; // each level gets the 8-second SOS window in this demo
+        var lanes = Array.prototype.slice.call(root.querySelectorAll(".rp-lane"));
+        var trigger = root.querySelector("[data-trigger]");
+        var ack = root.querySelector("[data-ack]");
+        var reset = root.querySelector("[data-reset]");
+        var log = root.querySelector(".rp-log");
+        var level = -1, started = 0, total = 0, raf = 0;
+        function lane(i) { return lanes[i]; }
+        function setText(i, t) { lane(i).querySelector(".rp-state").textContent = t; }
+        function setBar(i, k) { lane(i).querySelector(".rp-meter i").style.width = (k * 100).toFixed(1) + "%"; }
+        function clear() {
+            cancelAnimationFrame(raf);
+            lanes.forEach(function (l, i) {
+                l.classList.remove("is-ringing", "is-missed", "is-done");
+                setBar(i, 0);
+                setText(i, "Waiting");
+            });
+            level = -1;
+        }
+        function ring(i) {
+            level = i;
+            started = performance.now();
+            lane(i).classList.add("is-ringing");
+            log.textContent = i === 0 ? "SOS raised. Nurse alerted." : "No answer. Passed to " + lane(i).querySelector("b").textContent.toLowerCase() + ".";
+            tick();
+        }
+        function tick() {
+            raf = requestAnimationFrame(function step(t) {
+                var el = t - started;
+                var k = Math.min(1, el / WINDOW);
+                setBar(level, k);
+                setText(level, "Ringing · " + Math.max(0, (WINDOW - el) / 1000).toFixed(1) + "s left");
+                if (k < 1) { raf = requestAnimationFrame(step); return; }
+                total += WINDOW;
+                if (level < lanes.length - 1) {
+                    lane(level).classList.remove("is-ringing");
+                    lane(level).classList.add("is-missed");
+                    setText(level, "Missed · auto-escalated");
+                    ring(level + 1);
+                } else {
+                    started = performance.now();
+                    setText(level, "Still paging…");
+                    log.textContent = "Doctor keeps being paged until someone responds.";
+                    raf = requestAnimationFrame(step);
+                }
+            });
+        }
+        trigger.addEventListener("click", function () {
+            clear();
+            total = 0;
+            trigger.disabled = true;
+            ack.disabled = false;
+            ring(0);
+        });
+        ack.addEventListener("click", function () {
+            if (level < 0) return;
+            cancelAnimationFrame(raf);
+            var secs = ((total + performance.now() - started) / 1000).toFixed(1);
+            var l = lane(level);
+            l.classList.remove("is-ringing");
+            l.classList.add("is-done");
+            setText(level, "Responded");
+            log.textContent = "Handled by " + l.querySelector("b").textContent.toLowerCase() + " after " + secs + "s.";
+            ack.disabled = true;
+            trigger.disabled = false;
+            level = -1;
+        });
+        reset.addEventListener("click", function () {
+            clear();
+            trigger.disabled = false;
+            ack.disabled = true;
+            log.textContent = "Press Trigger SOS to start.";
+        });
+        clear();
+    });
+
+    /* ---------- Dashboard states: Normal / Vital alert / SOS / Doctor ---------- */
+    document.querySelectorAll("[data-states]").forEach(function (wrap) {
+        var dash = wrap.querySelector(".rp-dash");
+        var buttons = Array.prototype.slice.call(wrap.querySelectorAll("[data-state-btn]"));
+        var count = wrap.querySelector(".rp-count");
+        var timer = 0;
+        function countdown() {
+            clearInterval(timer);
+            if (!count) return;
+            var left = 8;
+            var draw = function () {
+                count.style.setProperty("--p", String(left / 8));
+                count.querySelector("b").textContent = left;
+            };
+            draw();
+            timer = setInterval(function () {
+                left = left <= 0 ? 8 : left - 1;
+                draw();
+            }, 1000);
+        }
+        function set(state) {
+            dash.setAttribute("data-state", state);
+            buttons.forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-state-btn") === state ? "true" : "false"); });
+            if (state === "sos") countdown(); else clearInterval(timer);
+        }
+        buttons.forEach(function (b) { b.addEventListener("click", function () { set(b.getAttribute("data-state-btn")); }); });
+        set(dash.getAttribute("data-state") || "normal");
+    });
+
+    /* ---------- Reaction-time test: find the alert in two wireframe variants ---------- */
+    document.querySelectorAll("[data-spot]").forEach(function (root) {
+        var grid = root.querySelector(".rp-tiles");
+        var cover = root.querySelector(".rp-cover");
+        var start = root.querySelector("[data-start]");
+        var msg = cover.querySelector("p");
+        var out = { a: root.querySelector('[data-result="a"]'), b: root.querySelector('[data-result="b"]') };
+        var names = ["A. Patel", "J. Okoro", "M. Ellis", "R. Chen", "S. Murphy", "D. Novak", "L. Haddad", "K. Brown", "T. Silva", "P. Walsh", "E. Kaur", "H. Jones"];
+        var order = ["a", "b"], round = 0, t0 = 0;
+        function rnd(a, b) { return Math.round(a + Math.random() * (b - a)); }
+        function build(variant) {
+            root.setAttribute("data-variant", variant);
+            grid.innerHTML = "";
+            var hot = rnd(0, names.length - 1);
+            names.forEach(function (n, i) {
+                var b = document.createElement("button");
+                b.type = "button";
+                b.className = "rp-tile" + (i === hot ? " is-alert" : "");
+                var hr = i === hot ? rnd(124, 138) : rnd(62, 96);
+                b.innerHTML = "<b>" + n + "</b>" +
+                    "<span>HR <em" + (i === hot ? ' class="is-hot"' : "") + ">" + hr + "</em></span>" +
+                    "<span>SpO₂ <em>" + rnd(94, 99) + "%</em></span>" +
+                    "<span>BP <em>" + rnd(112, 134) + "/" + rnd(70, 86) + "</em></span>" +
+                    "<span>Temp <em>" + (36 + Math.random()).toFixed(1) + "°</em></span>";
+                b.setAttribute("aria-label", n + (i === hot ? ", alert" : ""));
+                grid.appendChild(b);
+            });
+        }
+        grid.addEventListener("click", function (e) {
+            var tile = e.target.closest(".rp-tile");
+            if (!tile || !t0) return;
+            if (!tile.classList.contains("is-alert")) {
+                tile.classList.remove("is-wrong");
+                void tile.offsetWidth;
+                tile.classList.add("is-wrong");
+                return;
+            }
+            var ms = Math.round(performance.now() - t0);
+            t0 = 0;
+            var v = order[round];
+            out[v].textContent = (ms / 1000).toFixed(2) + "s";
+            round++;
+            if (round < order.length) {
+                msg.textContent = "Nice. Now the same job on variant B, where the alert is promoted to the top.";
+                start.textContent = "Start variant B";
+            } else {
+                var faster = parseFloat(out.b.textContent) < parseFloat(out.a.textContent);
+                msg.textContent = (faster ? "You were faster on B. " : "Close one. ") + "With clinical staff, the alert-first layout was consistently quicker, and it shaped the final design.";
+                start.textContent = "Try again";
+                round = 0;
+            }
+            cover.hidden = false;
+        });
+        start.addEventListener("click", function () {
+            if (round === 0 && start.textContent === "Try again") { out.a.textContent = "–"; out.b.textContent = "–"; }
+            build(order[round]);
+            cover.hidden = true;
+            t0 = performance.now();
+        });
+        build("a");
+    });
+
+
+    /* ---------- Header: hide on scroll down, show on scroll up ---------- */
+    (function () {
+        var header = document.querySelector(".site-header");
+        if (!header) return;
+        var lastY = window.scrollY;
+        function update() {
+            var y = Math.max(0, window.scrollY);
+            var dy = y - lastY;
+            if (Math.abs(dy) < 6) return; // ignore tiny jitters
+            var hide = dy > 0 && y > header.offsetHeight;
+            header.classList.toggle("is-hidden", hide);
+            lastY = y;
+        }
+        window.addEventListener("scroll", update, { passive: true });
+    })();
+
+    /* ---------- Collapsible left panel ---------- */
+    (function () {
+        var side = document.querySelector(".shell > .side");
+        var id = document.querySelector(".site-id");
+        if (!side || !id) return;
+        var root = document.documentElement;
+        side.id = side.id || "side-panel";
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "side-toggle";
+        btn.setAttribute("aria-controls", side.id);
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' +
+            '<path d="M8 3.5h8c2.8 0 4.5 1.7 4.5 4.5v8c0 2.8-1.7 4.5-4.5 4.5H8c-2.8 0-4.5-1.7-4.5-4.5V8c0-2.8 1.7-4.5 4.5-4.5Z"/>' +
+            '<path d="M9.5 3.5v17"/><rect class="pane" x="5.5" y="6" width="2" height="12" rx="1" fill="currentColor" stroke="none"/></svg>';
+        id.insertBefore(btn, id.firstChild);
+        function sync() {
+            var collapsed = root.dataset.side === "collapsed";
+            btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+            btn.setAttribute("aria-label", collapsed ? "Show side panel" : "Hide side panel");
+            btn.title = collapsed ? "Show panel ( [ )" : "Hide panel ( [ )";
+            side.inert = collapsed && window.matchMedia("(min-width: 901px)").matches;
+        }
+        function toggle() {
+            var next = root.dataset.side === "collapsed" ? "open" : "collapsed";
+            if (next === "open") delete root.dataset.side; else root.dataset.side = next;
+            try { localStorage.setItem("side", next); } catch (e) { }
+            sync();
+            // the filter thumb measures its buttons, so let it re-measure after the grid moves
+            setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 420);
+        }
+        btn.addEventListener("click", toggle);
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "[" || e.metaKey || e.ctrlKey || e.altKey) return;
+            var t = e.target;
+            if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+            toggle();
+        });
+        window.addEventListener("resize", sync);
+        sync();
+    })();
+
     /* ---------- Theme + pull cord (a lamp switch for dark mode) ---------- */
     (function () {
         var root = document.documentElement;
