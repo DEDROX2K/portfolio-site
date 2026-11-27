@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highlighter — Play — Raghav Prasanna</title>
+    <meta name="description" content="iOS-style text selection for the desktop, with a marker that never draws the same stroke twice. Try it live, tune it, see how it's made, and take the code or a prompt.">
+    <meta property="og:title" content="Highlighter — Play — Raghav Prasanna">
+    <meta property="og:description" content="iOS-style text selection for the desktop, with a marker that never draws the same stroke twice.">
+    <meta property="og:image" content="https://raghavprasanna.co.uk/images/id-peek-card.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="logo.png" type="image/png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preload" href="Fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf" as="font" type="font/ttf" crossorigin>
+    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side","read"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v});var q=location.search;if(/[?&]tldr(=|&|$)/.test(q))d.dataset.read="tldr";else if(/[?&]full(=|&|$)/.test(q))delete d.dataset.read}catch(e){}</script>
+    <link rel="canonical" href="https://raghavprasanna.co.uk/play-highlighter.html">
+    <meta property="og:url" content="https://raghavprasanna.co.uk/play-highlighter.html">
+    <script defer data-domain="raghavprasanna.co.uk" src="https://plausible.io/js/script.outbound-links.file-downloads.tagged-events.js"></script>
+    <script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
+    <link rel="stylesheet" href="site.css">
+    <link rel="stylesheet" href="play.css">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="site-id">
+            <button class="avatar-ring" type="button" data-stories aria-label="View Raghav's stories"><img src="images/bwme.png" alt="" width="44" height="44" decoding="async"></button>
+            <div class="site-id-text">
+                <a class="site-name" href="./">Raghav Prasanna<span class="verified" role="img" aria-label="Verified"></span></a>
+                <span class="site-loc">London, UK</span>
+            </div>
+        </div>
+        <nav class="site-nav" aria-label="Main">
+            <a href="play.html" aria-current="page">Play</a>
+            <a href="about.html">About</a>
+            <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
+            <span class="site-clock"><time data-clock>--:--</time></span>
+        </nav>
+    </header>
+
+    <main class="lab">
+
+        <a class="back-link" href="play.html"><span>Play</span></a>
+
+        <header class="lab-head">
+            <h1 class="lab-title">Highlighter</h1>
+            <p class="lab-lede">
+                iOS-style text selection for the desktop, with a marker that never draws the same stroke twice.
+                It runs on every page of this site, so go on, select something.
+            </p>
+            <ul class="tags"><li>Vanilla JS</li><li>No dependencies</li><li>Live on every page</li></ul>
+            <div class="lab-actions">
+                <a class="btn-dark" href="#code">Get the code</a>
+                <a class="lab-btn" href="#prompt">Copy the prompt</a>
+            </div>
+        </header>
+
+        <section class="lab-demo" aria-labelledby="demo-title">
+            <h2 class="visually-hidden" id="demo-title">Try it</h2>
+            <div class="lab-stage" data-demo>
+                <p class="lab-hint">Drag across any words, then pick <b>Highlight</b>. Click a highlight to change its ink.</p>
+                <p class="lab-passage">
+                    Reading on a screen is passive. You scroll, you nod, you forget. A highlighter changes that:
+                    the moment you drag it across a line, you've decided that sentence matters. This one borrows
+                    the selection handles from iOS, then hands you a marker. Every stroke grows from its own random
+                    seed, so the tips slant a little differently, the edges wobble, and the ink gets denser where the
+                    felt went over twice. Highlights stay on the page when you come back.
+                </p>
+                <p class="lab-touch">On a phone or tablet? This one is built for a mouse or trackpad, so your device's own selection takes over here.</p>
+            </div>
+            <p class="lab-status" data-status-hl aria-live="polite">Nothing highlighted on this page yet.</p>
+        </section>
+
+        <section class="lab-section" id="tune">
+            <h2 class="lab-h2">Make it yours</h2>
+            <p class="lab-p">These sliders drive every highlight on this page live. Drag one and watch the strokes above redraw.</p>
+            <div class="lab-sliders" data-tune="Highlighter">
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="ink" min="0.35" max="1" step="0.01">
+                        <span class="lab-slider-label">Ink</span>
+                        <output></output>
+                    </span>
+                    <small>sheer → saturated</small>
+                </label>
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="wobble" min="0" max="5" step="0.1">
+                        <span class="lab-slider-label">Wobble</span>
+                        <output></output>
+                    </span>
+                    <small>ruler-straight → shaky hand</small>
+                </label>
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="tip" min="0" max="14" step="1">
+                        <span class="lab-slider-label">Tip overhang</span>
+                        <output></output>
+                    </span>
+                    <small>clipped → generous</small>
+                </label>
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="pass" min="0" max="0.6" step="0.01">
+                        <span class="lab-slider-label">Second pass</span>
+                        <output></output>
+                    </span>
+                    <small>one clean stroke → went over it twice</small>
+                </label>
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="streaks" min="0" max="5" step="1">
+                        <span class="lab-slider-label">Felt streaks</span>
+                        <output></output>
+                    </span>
+                    <small>fresh pen → running dry</small>
+                </label>
+            </div>
+            <button class="lab-btn lab-reset" type="button" data-reset>Back to defaults</button>
+        </section>
+
+        <section class="lab-section" id="how">
+            <h2 class="lab-h2">How it's made</h2>
+            <ol class="lab-steps">
+                <li>
+                    <h3>The selection stays the browser's</h3>
+                    <p>
+                        Nothing replaces native selection, so double-click, triple-click, shift-click and the keyboard
+                        all still work. <code>::selection</code> gets the iOS blue, and everything else is drawn on top.
+                        It only switches on for a mouse or trackpad, <code>(hover: hover) and (pointer: fine)</code>,
+                        because phones already have the real thing.
+                    </p>
+                </li>
+                <li>
+                    <h3>Handles that line up with the tint</h3>
+                    <p>
+                        Each handle is a 2px bar with a round knob, placed on the first and last characters that are
+                        actually painted. Every character is measured with <code>Range.getClientRects()</code>, and spaces
+                        count too, so a selection ending on a space doesn't leave the handle one letter short. Dragging
+                        a knob finds the caret under the pointer with <code>caretPositionFromPoint</code> and moves that
+                        end of the selection. The handles glide between letters over 150ms.
+                    </p>
+                </li>
+                <li>
+                    <h3>A liquid-glass menu</h3>
+                    <p>
+                        The capsule is a translucent fill behind <code>backdrop-filter: blur(22px) saturate(190%)</code>,
+                        with a bright inner top edge and a hairline rim. It springs open from the selection using a CSS
+                        <code>linear()</code> spring with about 4% overshoot, glides when the selection moves, and resizes
+                        smoothly when "Copy" turns into "Copied". One soft blob slides between the buttons on hover.
+                    </p>
+                </li>
+                <li>
+                    <h3>Highlights are saved as quotes</h3>
+                    <p>
+                        A highlight is a range of characters over the page's text. It's saved as the text plus 32
+                        characters either side, so it can be found again on reload even when other text on the page
+                        changes (the clock in the header, say). Overlapping highlights merge into one.
+                    </p>
+                </li>
+                <li>
+                    <h3>A stroke that's never the same twice</h3>
+                    <p>
+                        Each highlight gets a random seed that drives a small generator (mulberry32). It draws three SVG
+                        layers: a left chisel tip, a right tip, and a body stretched to fit. The body has wobbly edges,
+                        a denser second pass and a few streaks where the felt skipped. <code>box-decoration-break: clone</code>
+                        gives every wrapped line its own stroke with its own tips. On dark themes the ink goes solid and the
+                        text turns dark, like a marker on paper.
+                    </p>
+                </li>
+                <li>
+                    <h3>The bug worth knowing about</h3>
+                    <p>
+                        The overlay lives at the end of <code>&lt;body&gt;</code>. While you drag-select, the end handle sits
+                        right under the cursor, and if the browser hit-tests it, the selection jumps to the end of the page
+                        and back, over and over. The fix is one rule: while a selection is being dragged, the overlay
+                        gets <code>pointer-events: none</code>.
+                    </p>
+                </li>
+            </ol>
+        </section>
+
+        <section class="lab-section" id="code">
+            <h2 class="lab-h2">The code</h2>
+            <p class="lab-p">
+                This is the exact code running on this site, read live from its source files. Two plain files, no
+                build step. Add the CSS after your styles and the script before <code>&lt;/body&gt;</code>.
+            </p>
+            <div class="lab-code" data-region="highlighter" data-hl-skip>
+                <div class="lab-code-bar">
+                    <div class="lab-tabs" role="tablist" aria-label="Files">
+                        <button type="button" role="tab" aria-selected="true" data-file="js">highlighter.js</button>
+                        <button type="button" role="tab" aria-selected="false" data-file="css">highlighter.css</button>
+                    </div>
+                    <span class="lab-code-meta" data-code-meta></span>
+                    <div class="lab-code-tools">
+                        <button type="button" class="lab-tool" data-code-copy>Copy</button>
+                        <button type="button" class="lab-tool" data-code-download>Download</button>
+                    </div>
+                </div>
+                <pre class="lab-pre" tabindex="0"><code data-code>Loading the source…</code></pre>
+                <button type="button" class="lab-code-more" data-code-more>Show all</button>
+            </div>
+            <p class="lab-note">
+                It expects a few design tokens (<code>--ease</code>, <code>--spring</code>, <code>--fast</code>,
+                <code>--radius-ctl</code>, <code>--r-md</code>). They're at the top of the CSS file. Dark mode follows
+                <code>&lt;html data-theme="dark"&gt;</code>; change that selector to match your site.
+            </p>
+        </section>
+
+        <section class="lab-section lab-prompt" id="prompt">
+            <h2 class="lab-h2">Build your own</h2>
+            <p class="lab-p">
+                Rather have your AI build it to fit your own codebase? Copy this prompt into Claude or your coding
+                assistant. It describes every detail above, including the bug.
+            </p>
+            <div class="lab-prompt-box" data-hl-skip>
+                <pre class="lab-prompt-text" data-prompt>Build an iOS-style text selection and highlighter for my website in plain JavaScript and CSS, with no dependencies.
+
+Scope
+- Desktop only: switch it on when matchMedia("(hover: hover) and (pointer: fine)") matches. Touch devices keep their native selection UI.
+- Keep the browser's native selection (double-click, triple-click, shift-click and the keyboard must all still work). Only draw on top of it.
+
+Selection
+- Tint ::selection with iOS blue: rgba(0, 122, 255, .24) on light themes, rgba(10, 132, 255, .42) on dark.
+- Draw two handles over the selection: a 2px bar the height of the line with a 10px round knob. The knob sits on top at the start and at the bottom at the end.
+- Place the handles on the first and last characters that are actually painted in the range. Measure each character with Range.getClientRects, count spaces, and skip collapsed whitespace that has no width. The handles must line up exactly with the blue tint, including when the selection starts or ends on a space.
+- Make the knobs draggable. On pointerdown, take over and move that end of the selection with caretPositionFromPoint (fall back to caretRangeFromPoint) and Selection.setBaseAndExtent. Never let the two ends cross.
+- Handles glide between characters with a 150ms ease-out, but jump instantly when they first appear and while the page scrolls.
+- IMPORTANT: the overlay is appended at the end of &lt;body&gt;. While the user is drag-selecting or dragging a handle, give all overlay UI pointer-events: none. Otherwise the browser hit-tests the handle under the cursor and the selection flickers to the end of the page.
+
+Menu
+- When the pointer is released, show a floating capsule centred above the selection (below it if there's no room), kept 8px inside the viewport: "Copy | Highlight".
+- Liquid-glass look: a translucent background with backdrop-filter: blur(22px) saturate(190%), a bright inner top edge, a hairline rim and a soft layered shadow, plus a darker variant for dark themes. One translucent blob slides between the buttons on hover. Buttons scale to .92 when pressed.
+- Motion: open from the selection point, scaling from .82 to 1 with a spring (a CSS linear() easing with about 4% overshoot, around 560ms). Glide to new positions with the same spring, and animate the width when a label changes (Copy → Copied). Use the separate translate and scale properties so position and scale animate independently.
+- Call preventDefault on pointerdown inside the menu so clicking it doesn't clear the selection.
+- Copy uses navigator.clipboard.writeText with a document.execCommand("copy") fallback, shows "Copied" for about 700ms, then closes. Esc clears the selection.
+
+Highlights
+- Highlight wraps the selected text in &lt;mark class="hl" data-c="colour" data-v="seed"&gt;, one mark per text node, splitting text nodes at the edges. Skip whitespace-only text nodes that don't render (no client rect with width), or the mark's padding paints stray blobs.
+- Model highlights as character ranges over the page's text. Walk the text nodes and leave out script, style, svg, form fields and any live-updating text. Adding a highlight merges any it overlaps into one.
+- Save highlights per page in localStorage as text quotes: { prefix: 32 chars before, text, suffix: 32 chars after, colour, seed }. On load, find prefix + text + suffix in the page's text (fall back to the text alone) and wrap it again. This survives other text on the page changing.
+- Clicking a highlight selects all of it and the menu becomes "Copy | 4 colour dots | Remove".
+  - A dot recolours the whole highlight in place: keep the selection, keep the menu open, and remember the colour for the next new highlight.
+  - Remove erases the whole highlight.
+  - While this menu is open, hide the blue tint over marks so the ink colour reads true.
+
+The marker stroke
+- Paint each mark with three SVG data-URI background layers: a left chisel tip and a right tip, each 7px wide, and a body stretched between them (preserveAspectRatio="none").
+- Use box-decoration-break: clone so every wrapped line gets its own stroke with its own tips. Add padding .06em 7px with a matching negative margin so the ink overhangs the letters without moving any text.
+- Generate each stroke from a seeded PRNG (mulberry32), so no two highlights look alike but each one is stable across reloads. Each stroke has:
+  - wobbly top and bottom edges (about ±1 unit in a 24-unit-tall viewBox)
+  - slanted, slightly rounded tips
+  - a denser second pass over part of the stroke
+  - 2–3 thin, lighter streaks where the felt skipped
+  - a faint darker line along the edges
+- Inks on light themes, at about 78% opacity: yellow #ffe94a, green #86f76a, pink #ff8cc6, blue #7dd3ff.
+- Inks on dark themes, at about 90%: #ffd60a, #4cd964, #ff5fa8, #40a9ff. Turn the highlighted text dark (#1b1b1c), and drop the edge line, which reads as an outline on dark backgrounds.
+- Where one highlight continues across inline elements on the same line, drop the tips at the joins so it reads as one stroke.
+- New highlights draw in from left to right (animate background-size). Removed ones erase from right to left.
+- Repaint the strokes when the site's theme changes.
+
+Respect prefers-reduced-motion throughout.</pre>
+            </div>
+            <button class="btn-dark lab-copy-prompt" type="button" data-copy-prompt>Copy prompt</button>
+        </section>
+
+        <nav class="case-pager lab-pager" aria-label="More in Play">
+            <a class="prev-case" href="play.html" rel="prev"><small>Back to</small><span>Play</span></a>
+            <a class="next-case" href="play-pullcord.html" rel="next"><small>Next up</small><span>Pull cord</span></a>
+        </nav>
+
+        <footer class="about-footer play-footer"><span>2026</span> Raghav Prasanna</footer>
+
+    </main>
+
+    <script src="site.js" defer></script>
+    <script src="play.js" defer></script>
+</body>
+
+</html>

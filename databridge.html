@@ -9,14 +9,21 @@
 
     <meta property="og:title" content="Databridge — Designing trust for an AI data marketplace">
     <meta property="og:description" content="UX / product case study on verification, usage-based pricing and zero-trust data access.">
-    <meta property="og:image" content="images/id-peek-card.png">
+    <meta property="og:image" content="https://raghavprasanna.co.uk/images/id-peek-card.png">
     <meta property="og:type" content="article">
     <meta name="twitter:card" content="summary_large_image">
 
     <link rel="icon" href="logo.png" type="image/png">
     <meta name="theme-color" content="#ffffff">
     <link rel="preload" href="Fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf" as="font" type="font/ttf" crossorigin>
-    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v})}catch(e){}</script>
+    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side","read"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v});var q=location.search;if(/[?&]tldr(=|&|$)/.test(q))d.dataset.read="tldr";else if(/[?&]full(=|&|$)/.test(q))delete d.dataset.read}catch(e){}</script>
+    <link rel="canonical" href="https://raghavprasanna.co.uk/databridge.html">
+    <meta property="og:url" content="https://raghavprasanna.co.uk/databridge.html">
+    <script type="application/ld+json">
+    {"@context": "https://schema.org", "@type": "CreativeWork", "@id": "https://raghavprasanna.co.uk/databridge.html#work", "url": "https://raghavprasanna.co.uk/databridge.html", "name": "Designing trust for an AI data marketplace", "headline": "Designing trust for an AI data marketplace", "description": "Verification, usage-based pricing and sensitive-data access for an AI training-data marketplace.", "image": "https://raghavprasanna.co.uk/images/case/db-supplier-dashboard.svg", "keywords": "AI, Product design, Concept, Marketplace", "inLanguage": "en-GB", "author": {"@type": "Person", "@id": "https://raghavprasanna.co.uk/#person", "name": "Raghav Prasanna", "url": "https://raghavprasanna.co.uk/"}, "isPartOf": {"@id": "https://raghavprasanna.co.uk/#website"}, "dateCreated": "2026"}
+    </script>
+    <script defer data-domain="raghavprasanna.co.uk" src="https://plausible.io/js/script.outbound-links.file-downloads.tagged-events.js"></script>
+    <script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
     <link rel="stylesheet" href="site.css">
 </head>
 
@@ -31,6 +38,7 @@
             </div>
         </div>
         <nav class="site-nav" aria-label="Main">
+            <a href="play.html">Play</a>
             <a href="about.html">About</a>
             <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
             <span class="site-clock"><time data-clock>--:--</time></span>
@@ -39,14 +47,19 @@
 
     <div class="shell">
 
-        <aside class="side case-side">
-            <a class="back-link" href="./">Back to home</a>
-            <ul class="tags"><li>Concept</li><li>Product design</li><li>AI</li></ul>
-            <h1 class="case-title">Databridge</h1>
-            <p class="case-lede">Designing trust for an AI data marketplace, from the upload screen to the license terms.</p>
+        <aside class="side case-side" aria-label="Case study navigation">
+            <div class="case-bar">
+                <a class="back-link" href="./" aria-label="Back to home"><span>Back to home</span></a>
+            </div>
+            <div class="read-mode" role="group" aria-label="Reading length" data-read-toggle>
+                <button type="button" data-read-btn="full" aria-pressed="true">Full</button>
+                <button type="button" data-read-btn="tldr" aria-pressed="false">TL;DR</button>
+            </div>
+            <p class="read-mode-note" data-read-time></p>
             <nav aria-label="On this page">
                 <ul class="toc">
                     <li><a href="#overview">Overview</a></li>
+                    <li><a href="#problem">The problem</a></li>
                     <li><a href="#approach">Approach</a></li>
                     <li><a href="#how">How it works</a></li>
                     <li><a href="#screens">The two screens</a></li>
@@ -57,11 +70,68 @@
             </nav>
         </aside>
 
-        <main class="case-body">
+        <main class="case-body has-tldr">
 
-            <section class="case-section" id="overview">
-                <h2>Overview</h2>
-                <h3>Data is easy to find. Trust isn't.</h3>
+            <figure class="case-hero">
+                <img src="images/case/db-supplier-dashboard.svg" alt="Data Refinery screen showing pipeline status, a PII schema table, a fix-it banner and an auto-generated listing draft" loading="eager" fetchpriority="high" decoding="async">
+            </figure>
+
+            <!-- Intro: the whole case study in one screen -->
+            <section class="case-section case-intro" id="overview" data-tldr>
+                <ul class="tags"><li>Concept</li><li>Product design</li><li>AI</li></ul>
+                <h1 class="case-title">Databridge</h1>
+                <p class="case-sub">Designing trust for an AI training-data marketplace, from the upload screen to the license terms.</p>
+
+                <dl class="case-meta">
+                    <div><dt>Timeline</dt><dd>2026 · Concept</dd></div>
+                    <div><dt>Team</dt><dd>Solo</dd></div>
+                    <div><dt>Role</dt><dd>Product &amp; UX, AI systems design</dd></div>
+                    <div><dt>Skills</dt><dd>Product strategy, systems design, pricing, UI</dd></div>
+                </dl>
+
+                <p class="cs-label">Long story short</p>
+                <h2 class="case-lss">I designed how an AI data marketplace earns trust from suppliers and buyers at the same time.</h2>
+                <p>Before an AI team pays for a dataset they want to know what's in it, whether they can train on it, whether it's clean and whether it'll still be true next quarter. The people who own useful data usually can't answer any of that cheaply. This is a concept: I worked through verification, pricing and sensitive-data access end to end.</p>
+
+                <ol class="case-points">
+                    <li>
+                        <h3><span>01</span>Verification</h3>
+                        <p>Moved the expensive checking to upload time. Models write the metadata, scrub personal data and suggest a license.</p>
+                    </li>
+                    <li>
+                        <h3><span>02</span>Pricing</h3>
+                        <p>Priced by use class first and consumption second, with a metering log both sides can verify.</p>
+                    </li>
+                    <li>
+                        <h3><span>03</span>Sensitive data</h3>
+                        <p>Bring-your-own-storage and enclave training, so regulated data never has to leave its owner.</p>
+                    </li>
+                </ol>
+
+                <div class="case-hmw">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 17.5h-1A3.5 3.5 0 0 1 3 14V8a3.5 3.5 0 0 1 3.5-3.5h11A3.5 3.5 0 0 1 21 8v6a3.5 3.5 0 0 1-3.5 3.5H12l-4.5 3v-3Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.2 2.4c-.5.2-.7.5-.7 1v.3M12 15.6v.01"/></svg>
+                    <p>How might we help AI teams trust a dataset before they pay for it, without manual review that doesn't scale?</p>
+                </div>
+
+                <div class="case-rows">
+                    <div class="case-row">
+                        <h3>Challenge</h3>
+                        <div>
+                            <p>Suppliers upload files with no description, no schema and personal data hiding in free-text columns. Buyers search by task, not by dataset name. <mark class="cs-mark">Manual review is the obvious fix, and it costs the platform more than a small dataset earns.</mark> Each side distrusts the other, so the product has to win both at once.</p>
+                        </div>
+                    </div>
+                    <div class="case-row">
+                        <h3>Targets</h3>
+                        <div>
+                            <div class="case-stats"><div><b>&lt; 15 min</b><span>from upload to live listing</span></div><div><b>&gt; 95%</b><span>of listings with auto-generated metadata</span></div><div><b>&lt; 1%</b><span>PII false negatives on audited samples</span></div></div><small>It's a concept, so these are the goals I designed against, not measured results.</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="case-section" id="problem">
+                <p class="cs-kicker">Problem</p>
+                <h2>Data is easy to find. Trust isn't.</h2>
             <p>
                 Before an AI team pays for a dataset they want four answers. What's in it? Are we allowed to train on
                 it? Is it clean? Will it still be true next quarter? The people who own useful data usually can't
@@ -74,18 +144,11 @@
                 like "French legal contracts, commercial use OK", which keyword search can't read. And each side
                 distrusts the other, so the product has to win both at once.
             </p>
-                <dl class="meta-list">
-                    <dt>Role &amp; context</dt>
-                    <dd>Product &amp; UX, AI systems design · Concept case study · 2026</dd>
-                    <dt>Focus</dt>
-                    <dd>Verification · Usage-based pricing · Sensitive data</dd>
-                </dl>
 
             </section>
-
             <section class="case-section" id="approach">
-                <h2>Approach</h2>
-                <h3>What I set out to do</h3>
+                <p class="cs-kicker">Process</p>
+                <h2>What I set out to do</h2>
             <p>
                 My bet was to move the expensive checking to upload time and let models do it. When a supplier
                 uploads a file, the system writes the metadata, finds and scrubs personal data, guesses the license
@@ -104,9 +167,11 @@
                 <div class="metric"><span class="n">&gt; 95%</span><span class="d">target share of listings with auto-generated metadata</span></div>
                 <div class="metric"><span class="n">&lt; 1%</span><span class="d">target PII false-negative rate on audited samples</span></div>
             </div>
-            </section>
 
+            <div class="note" data-draft>[If you test the prototype, put one real result here, e.g. “[x] of [y] buyers found a dataset they'd license in under [z] minutes”.]</div>
+            </section>
             <section class="case-section" id="how">
+                <p class="cs-kicker">Solution</p>
                 <h2>How it works</h2>
             <p>Two flows: suppliers push files through an ingestion pipeline, and buyers search through a retrieval flow. Click through the stages.</p>
 
@@ -194,8 +259,8 @@
                 has to be auditable, so I'd avoid agent frameworks there.
             </p>
             </section>
-
-            <section class="case-section" id="screens">
+            <section class="case-section" id="screens" data-tldr>
+                <p class="cs-kicker">Solution</p>
                 <h2>The two screens</h2>
             <p>
                 The supplier screen has one job: turn a raw file into a trusted listing with as few decisions as
@@ -219,9 +284,19 @@
                 <img src="images/case/db-buyer-explorer.svg" alt="Data Explorer screen with a natural-language search, removable parsed chips, facets and result cards with why-it-matched lines" loading="lazy" decoding="async">
                 <figcaption>The Data Explorer: the query's reading stays visible as chips, and every result says why it matched.</figcaption>
             </figure>
-            </section>
 
+                <div data-draft data-full>
+                    <h3>From sketch to screen</h3>
+                    <p>How the supplier screen got from a list of checks to one fix-it flow.</p>
+                    <div class="evo">
+                        <figure><img src="images/case/db-sketch.jpg" alt="Early sketch" loading="lazy" decoding="async"><figcaption>Sketch</figcaption></figure>
+                        <figure><img src="images/case/db-wireframe.jpg" alt="Low-fidelity wireframe" loading="lazy" decoding="async"><figcaption>Wireframe</figcaption></figure>
+                        <figure><img src="images/case/db-supplier-dashboard.svg" alt="The Data Refinery screen" loading="lazy" decoding="async"><figcaption>Final concept</figcaption></figure>
+                    </div>
+                </div>
+            </section>
             <section class="case-section" id="pricing">
+                <p class="cs-kicker">Solution</p>
                 <h2>Pricing by use, not by file</h2>
             <p>
                 Selling whole datasets under flat licenses breaks down fast. A retrieval eval might need a few hundred
@@ -261,9 +336,20 @@
                 taken back. This is a design stance for counsel to confirm, not legal advice. Whether weights count as
                 a derivative work is still open in most jurisdictions.
             </p>
-            </section>
 
+                <div class="cs-tradeoff" data-full>
+                    <p class="cs-label">A tradeoff I made</p>
+                    <h3>Metered pricing, but not only metered</h3>
+                    <dl>
+                        <div><dt>What I wanted</dt><dd>Price every listing by use, so a 5% slice costs about 5%.</dd></div>
+                        <div><dt>What I chose</dt><dd>Keep full-corpus grants next to the metered tier, and use metering for long-tail demand.</dd></div>
+                        <div><dt>Why</dt><dd>With my placeholder rates, metered only beats flat after about 150 runs per listing. Big buyers would often pay more, and suppliers would earn less.</dd></div>
+                        <div><dt>The cost</dt><dd>Two pricing models to explain and enforce, instead of one clean story.</dd></div>
+                    </dl>
+                </div>
+            </section>
             <section class="case-section" id="sensitive">
+                <p class="cs-kicker">Solution</p>
                 <h2>When the data can't be uploaded</h2>
             <p>
                 Banks, hospitals and big enterprises won't hand raw records to a third party, however well audited,
@@ -298,8 +384,8 @@
                 testing and independent review before anyone says them to a customer.
             </p>
             </section>
-
-            <section class="case-section" id="next">
+            <section class="case-section" id="next" data-tldr>
+                <p class="cs-kicker">Reflection</p>
                 <h2>What I'd do next</h2>
             <p>
                 I haven't shipped this, so nothing here is a result. The first thing I'd build is the proxy and
@@ -309,12 +395,13 @@
                 evaluation jobs, and only then differential privacy and joint analysis.
             </p>
             <div class="note">Every number in this case study is a target or a placeholder. I'd want pilot data and legal review before quoting any of it.</div>
-                <a class="next-case" href="tallybird.html">
-                    <small>Next case study</small>
-                    <span>Tallybird</span>
-                </a>
 
             </section>
+
+            <nav class="case-pager" aria-label="More case studies">
+                <a class="prev-case" href="case3.html" rel="prev"><small>Previous case study</small><span>Research phase</span></a>
+                <a class="next-case" href="tallybird.html" rel="next"><small>Next case study</small><span>Tallybird</span></a>
+            </nav>
 
         </main>
     </div>

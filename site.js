@@ -1,7 +1,80 @@
 /* site.js — small shared behaviours: live clock, project filter,
-   case-study table of contents, and the stage selector. */
+   case-study table of contents, the stage selector, and iOS-style
+   text selection with Copy / Highlight. */
 (function () {
     "use strict";
+
+    /* ---------- Shared helpers ---------- */
+
+    // a bare key press: no modifiers, not typing, no viewer open
+    function plainKey(e) {
+        if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return false;
+        var t = e.target;
+        if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return false;
+        if (document.querySelector("dialog[open], .stories:not([hidden])")) return false;
+        return true;
+    }
+
+    // this page's URL, keeping the TL;DR choice so a shared link opens the same view
+    function pageUrl(hash) {
+        var tldr = document.documentElement.dataset.read === "tldr" && document.querySelector("[data-read-toggle]");
+        return location.origin + location.pathname + (tldr ? "?tldr" : "") + (hash || "");
+    }
+
+    // analytics event (Plausible); a no-op when the script is blocked or absent
+    function track(name, props) {
+        try { if (typeof window.plausible === "function") window.plausible(name, props ? { props: props } : undefined); } catch (e) { }
+    }
+    var PAGE = location.pathname.replace(/^.*\//, "") || "home";
+
+    /* Drafts: anything marked data-draft is hidden on the live site and shown,
+       outlined, on localhost (or with ?drafts), so unfinished copy can live in
+       the page without ever going public by accident. */
+    (function () {
+        var local = /^(localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)$/.test(location.hostname) || location.protocol === "file:";
+        if (local || /[?&]drafts(=|&|$)/.test(location.search)) document.documentElement.classList.add("show-drafts");
+        // sketch → screen slots show the file they expect until it exists
+        document.querySelectorAll(".evo img").forEach(function (img) {
+            var miss = function () {
+                img.classList.add("is-missing");
+                var fig = img.closest("figure");
+                if (fig) fig.setAttribute("data-file", img.getAttribute("src"));
+            };
+            if (img.complete && !img.naturalWidth) miss();
+            img.addEventListener("error", miss);
+        });
+    })();
+
+    var toastEl, toastTimer;
+    function toast(msg) {
+        if (!toastEl) {
+            toastEl = document.createElement("div");
+            toastEl.className = "toast";
+            toastEl.setAttribute("role", "status");
+            document.body.appendChild(toastEl);
+        }
+        toastEl.textContent = msg;
+        toastEl.classList.add("is-on");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove("is-on"); }, 2200);
+    }
+
+    function copyText(text, msg) {
+        var done = function () { toast(msg || "Copied"); };
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(done, fallback);
+        } else fallback();
+        function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.cssText = "position:fixed;opacity:0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); done(); } catch (e) { toast("Couldn't copy. The link is in the address bar."); }
+            ta.remove();
+        }
+    }
 
     var TZ = "Europe/London";
 
@@ -69,13 +142,19 @@
             });
             if (count) count.textContent = shown + (shown === 1 ? " project" : " projects");
             try { sessionStorage.setItem("workFilter", value); } catch (e) { }
+            if (animate) {
+                track("Work filter", { filter: value });
+                // ?filter=case / ?filter=built, so a filtered view can be linked
+                try { history.replaceState(null, "", location.pathname + (value === "all" ? "" : "?filter=" + value) + location.hash); } catch (e) { }
+            }
         };
 
         buttons.forEach(function (b) { b.addEventListener("click", function () { apply(b, true); }); });
 
         var initial = buttons[0];
         try {
-            var saved = sessionStorage.getItem("workFilter");
+            var fromUrl = (location.search.match(/[?&]filter=([a-z]+)/) || [])[1];
+            var saved = fromUrl || sessionStorage.getItem("workFilter");
             buttons.forEach(function (b) { if (b.getAttribute("data-value") === saved) initial = b; });
         } catch (e) { }
 
@@ -104,23 +183,113 @@
                 a.classList.toggle("is-active", on);
                 if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
             });
+            document.dispatchEvent(new CustomEvent("tocchange", { detail: id }));
         };
 
         var update = function () {
             var line = window.innerHeight * 0.3;
-            var current = sections[0];
-            sections.forEach(function (s) { if (s.getBoundingClientRect().top <= line) current = s; });
+            // sections hidden by the TL;DR view have no boxes, so skip them
+            var shown = sections.filter(function (s) { return s.getClientRects().length > 0; });
+            var current = shown[0];
+            shown.forEach(function (s) { if (s.getBoundingClientRect().top <= line) current = s; });
             // At the very bottom, the last section wins even if it's short.
             if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
-                current = sections[sections.length - 1];
+                current = shown[shown.length - 1];
             }
             if (current) setActive(current.id);
         };
 
         window.addEventListener("scroll", update, { passive: true });
         window.addEventListener("resize", update);
+        document.addEventListener("readmode", update);
         update();
     }
+
+    /* ---------- Case study: Full / TL;DR reading length ----------
+       Sections marked data-tldr stay in the short read; everything else, and
+       anything marked data-full inside a kept section, is hidden by CSS.
+       State lives on <html data-read> and in localStorage. */
+    (function () {
+        var seg = document.querySelector("[data-read-toggle]");
+        var body = document.querySelector(".case-body.has-tldr");
+        if (!seg || !body) return;
+        var root = document.documentElement;
+        var buttons = Array.prototype.slice.call(seg.querySelectorAll("[data-read-btn]"));
+
+        // mark TOC rows whose section only exists in the full read
+        document.querySelectorAll(".toc a").forEach(function (a) {
+            var s = document.getElementById(a.getAttribute("href").slice(1));
+            if (s && !s.hasAttribute("data-tldr")) a.parentNode.classList.add("is-full-only");
+        });
+
+        // reading time for both lengths (mockup text inside frames doesn't count)
+        var note = document.querySelector("[data-read-time]");
+        if (note) {
+            var count = function (el) {
+                var c = el.cloneNode(true);
+                c.querySelectorAll('[aria-hidden="true"], .cs-frame, svg, script' + (root.classList.contains("show-drafts") ? "" : ", [data-draft]")).forEach(function (n) { n.remove(); });
+                return (c.textContent.match(/\S+/g) || []).length;
+            };
+            var all = 0, short = 0;
+            Array.prototype.forEach.call(body.querySelectorAll(":scope > .case-section"), function (s) {
+                var n = count(s);
+                all += n;
+                if (s.hasAttribute("data-tldr")) {
+                    short += n;
+                    s.querySelectorAll("[data-full]").forEach(function (f) { short -= count(f); });
+                }
+            });
+            var mins = function (w) { return Math.max(1, Math.round(w / 230)) + " min read"; };
+            note.innerHTML = '<span class="is-full">' + mins(all) + '</span><span class="is-tldr">' + mins(short) + "</span>" +
+                '<button type="button" class="read-share">Copy link<span class="is-tldr"> to TL;DR</span></button>';
+            note.querySelector(".read-share").addEventListener("click", function () {
+                copyText(pageUrl(), "Link copied" + (root.dataset.read === "tldr" ? ", opens the TL;DR" : ""));
+                track("Link copied", { kind: root.dataset.read === "tldr" ? "tldr" : "full", page: PAGE });
+            });
+        }
+
+        // closing card for the short read
+        var end = document.createElement("div");
+        end.className = "tldr-end";
+        end.innerHTML = "<p>That's the short version.</p>" +
+            '<button type="button" class="tldr-more">Read the full case study</button>';
+        body.insertBefore(end, body.querySelector(":scope > .case-pager"));
+
+        function sync() {
+            var mode = root.dataset.read === "tldr" ? "tldr" : "full";
+            buttons.forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-read-btn") === mode ? "true" : "false"); });
+        }
+        function set(mode, keepPlace) {
+            if (mode === (root.dataset.read === "tldr" ? "tldr" : "full")) return;
+            var anchor = document.querySelector(".toc a.is-active");
+            anchor = anchor && document.getElementById(anchor.getAttribute("href").slice(1));
+            if (mode === "tldr") root.dataset.read = "tldr"; else delete root.dataset.read;
+            try { localStorage.setItem("read", mode); } catch (e) { }
+            try { history.replaceState(null, "", pageUrl(location.hash)); } catch (e) { }
+            track("Read mode", { mode: mode, page: PAGE });
+            sync();
+            document.dispatchEvent(new Event("readmode"));
+            // stay on the same section, or the next one that survived the switch
+            if (!keepPlace || !anchor) return;
+            var to = anchor;
+            while (to && !to.getClientRects().length) to = to.nextElementSibling;
+            if (to && to.classList.contains("case-section")) to.scrollIntoView({ block: "start" });
+            else window.scrollTo({ top: 0 });
+        }
+        buttons.forEach(function (b) {
+            b.addEventListener("click", function () { set(b.getAttribute("data-read-btn"), true); });
+        });
+        end.querySelector("button").addEventListener("click", function () {
+            var after = document.querySelector(".case-intro + .case-section");
+            set("full", false);
+            if (after) after.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        sync();
+        document.addEventListener("keydown", function (e) {
+            if (!plainKey(e) || e.key.toLowerCase() !== "t") return;
+            set(root.dataset.read === "tldr" ? "full" : "tldr", true);
+        });
+    })();
 
     /* ---------- Stage selector (tabs) ---------- */
     document.querySelectorAll(".stages").forEach(function (root) {
@@ -272,6 +441,11 @@
         document.querySelectorAll(".back-link").forEach(function (el) {
             el.insertBefore(icon("square-arrow-left"), el.firstChild);
         });
+        document.querySelectorAll(".prev-case span").forEach(function (el) {
+            var i = icon("square-arrow-left");
+            i.setAttribute("size", "20");
+            el.insertBefore(i, el.firstChild);
+        });
         document.querySelectorAll(".next-case span").forEach(function (el) {
             var i = icon("square-arrow-right");
             i.setAttribute("size", "20");
@@ -343,6 +517,10 @@
         var target = document.getElementById(a.getAttribute("href").slice(1));
         if (!target || target.tagName !== "DETAILS") return;
         e.preventDefault();
+        if (!target.getClientRects().length) {
+            var full = document.querySelector('[data-read-btn="full"]');
+            if (full) full.click();
+        }
         target.open = true;
         target.scrollIntoView({ behavior: "smooth", block: "center" });
         target.classList.add("is-flash");
@@ -546,6 +724,7 @@
         var side = document.querySelector(".shell > .side");
         var id = document.querySelector(".site-id");
         if (!side || !id) return;
+        var isCase = side.classList.contains("case-side");
         var root = document.documentElement;
         side.id = side.id || "side-panel";
         var btn = document.createElement("button");
@@ -555,13 +734,22 @@
         btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' +
             '<path d="M8 3.5h8c2.8 0 4.5 1.7 4.5 4.5v8c0 2.8-1.7 4.5-4.5 4.5H8c-2.8 0-4.5-1.7-4.5-4.5V8c0-2.8 1.7-4.5 4.5-4.5Z"/>' +
             '<path d="M9.5 3.5v17"/><rect class="pane" x="5.5" y="6" width="2" height="12" rx="1" fill="currentColor" stroke="none"/></svg>';
-        id.insertBefore(btn, id.firstChild);
+        var bar = side.querySelector(".case-bar");
+        if (bar) bar.appendChild(btn); else id.insertBefore(btn, id.firstChild);
         function sync() {
             var collapsed = root.dataset.side === "collapsed";
             btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
             btn.setAttribute("aria-label", collapsed ? "Show side panel" : "Hide side panel");
             btn.title = collapsed ? "Show panel ( [ )" : "Hide panel ( [ )";
-            side.inert = collapsed && window.matchMedia("(min-width: 901px)").matches;
+            var hide = collapsed && window.matchMedia("(min-width: 901px)").matches;
+            if (isCase) {
+                // the back link and this button stay usable in the slim rail
+                Array.prototype.forEach.call(side.children, function (el) {
+                    if (!el.classList.contains("case-bar")) el.inert = hide;
+                });
+            } else {
+                side.inert = hide;
+            }
         }
         function toggle() {
             var next = root.dataset.side === "collapsed" ? "open" : "collapsed";
@@ -573,15 +761,14 @@
         }
         btn.addEventListener("click", toggle);
         document.addEventListener("keydown", function (e) {
-            if (e.key !== "[" || e.metaKey || e.ctrlKey || e.altKey) return;
-            var t = e.target;
-            if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+            if (e.key !== "[" || !plainKey(e)) return;
             toggle();
         });
         window.addEventListener("resize", sync);
         sync();
     })();
 
+    // #region pullcord  (shown on play-pullcord.html, which reads this file between the region markers)
     /* ---------- Theme + pull cord (a lamp switch for dark mode) ---------- */
     (function () {
         var root = document.documentElement;
@@ -604,13 +791,20 @@
         function toggleTheme() {
             setPref("theme", isDark() ? "light" : "dark");
             if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) { } }
+            pulls++;
+            document.dispatchEvent(new CustomEvent("pullcord:pull", { detail: { pulls: pulls, dark: isDark() } }));
         }
         document.addEventListener("prefchange", syncKnob);
         syncKnob();
 
         // Verlet rope: anchored at the top, knob on the last point.
-        var SEG = 12, LEN = 8, GRAVITY = 1250, DAMPING = 0.94, FRICTION = 0.985, ITER = 20, STRETCH = 26;
-        var REST = SEG * LEN, ACTUATE = REST + STRETCH * 0.7, OFFSET = 100;
+        // CFG is read fresh every frame, so the sliders on play-pullcord.html apply to the very next pull.
+        var DEFAULTS = { gravity: 1250, damping: 0.94, stiffness: 20, travel: 26 };
+        var CFG = {};
+        Object.keys(DEFAULTS).forEach(function (k) { CFG[k] = DEFAULTS[k]; });
+        var SEG = 12, LEN = 8, FRICTION = 0.985, REST = SEG * LEN, OFFSET = 100;
+        function actuate() { return REST + CFG.travel * 0.7; }
+        var pulls = 0;
         var pts = [];
         for (var i = 0; i <= SEG; i++) {
             var nudge = reduce ? 0 : (i / SEG) * 3; // a small swing on load
@@ -621,12 +815,12 @@
         var armed = true, moved = false, released = false, raf = 0, last = 0, keep = 0;
 
         function step(dt) {
-            var g = GRAVITY * dt * dt, k = released ? DAMPING : FRICTION, end = pts[SEG];
+            var g = CFG.gravity * dt * dt, k = released ? CFG.damping : FRICTION, end = pts[SEG];
             for (var i = 1; i <= SEG; i++) {
                 var p = pts[i], vx = (p.x - p.px) * k, vy = (p.y - p.py) * k;
                 p.px = p.x; p.py = p.y; p.x += vx; p.y += vy + g;
             }
-            for (var n = 0; n < ITER; n++) {
+            for (var n = 0, iter = Math.round(CFG.stiffness); n < iter; n++) {
                 pts[0].x = 0; pts[0].y = 0;
                 if (dragging) { end.x = target.x; end.y = target.y; }
                 for (var j = 0; j < SEG; j++) {
@@ -690,11 +884,11 @@
             if (Math.abs(e.clientX - start.x) + Math.abs(e.clientY - start.y) > 4) moved = true;
             var r = cord.getBoundingClientRect();
             var x = e.clientX - r.left - grab.x, y = Math.max(4, e.clientY - r.top - grab.y);
-            var dist = Math.hypot(x, y), max = REST + STRETCH;
+            var dist = Math.hypot(x, y), max = REST + CFG.travel;
             if (dist > max) { x *= max / dist; y *= max / dist; dist = max; }
             target.x = x; target.y = y;
             // fires mid-pull, like a real pull switch detenting
-            if (armed && dist >= ACTUATE) { armed = false; toggleTheme(); }
+            if (armed && dist >= actuate()) { armed = false; toggleTheme(); }
             else if (!armed && dist < REST + 6) armed = true;
             wake();
         });
@@ -715,7 +909,19 @@
 
         render();
         wake();
+
+        // small API for the Play page: live tuning and a nudge to show the cord off
+        window.PullCord = {
+            config: CFG,
+            defaults: DEFAULTS,
+            isDark: isDark,
+            nudge: function () {
+                for (var i = 1; i <= SEG; i++) pts[i].px += (i / SEG) * 10;
+                wake();
+            }
+        };
     })();
+    // #endregion pullcord
 
     /* ---------- Stories: tap the avatar to open ----------
        Add slides here. src: image path (leave "" for a grey stand-in),
@@ -992,4 +1198,935 @@
             if (isOpen() && !panel.contains(e.target) && !btn.contains(e.target)) closePanel();
         });
     })();
+
+    /* ---------- Case study extras: progress, section links, image viewer,
+       mobile contents, prev / next keys, print ---------- */
+    (function () {
+        var body = document.querySelector(".case-body");
+        if (!body) return;
+        var root = document.documentElement;
+
+        /* reading progress along the top edge */
+        var bar = document.createElement("div");
+        bar.className = "read-progress";
+        bar.setAttribute("aria-hidden", "true");
+        document.body.appendChild(bar);
+        var queued = false, readToEnd = false;
+        function progress() {
+            queued = false;
+            var top = body.getBoundingClientRect().top + window.scrollY;
+            var span = body.offsetHeight - window.innerHeight;
+            var p = span > 0 ? (window.scrollY - top + window.innerHeight * 0.15) / span : 1;
+            bar.style.transform = "scaleX(" + Math.min(1, Math.max(0, p)).toFixed(4) + ")";
+            // the number that matters: did they get to the end?
+            if (p >= 0.9 && !readToEnd) {
+                readToEnd = true;
+                track("Read to end", { page: PAGE, mode: root.dataset.read === "tldr" ? "tldr" : "full" });
+            }
+        }
+        function queue() { if (!queued) { queued = true; requestAnimationFrame(progress); } }
+        window.addEventListener("scroll", queue, { passive: true });
+        window.addEventListener("resize", queue);
+        document.addEventListener("readmode", queue);
+        progress();
+
+        /* copy a link to any section */
+        var LINK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">' +
+            '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg>';
+        body.querySelectorAll(":scope > .case-section[id]:not(.case-intro) > h2").forEach(function (h) {
+            var id = h.parentNode.id;
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = "sec-link";
+            b.innerHTML = LINK_SVG;
+            b.setAttribute("aria-label", "Copy link to “" + h.textContent.trim() + "”");
+            b.title = "Copy link to this section";
+            b.addEventListener("click", function () {
+                try { history.replaceState(null, "", pageUrl("#" + id)); } catch (e) { }
+                copyText(pageUrl("#" + id), "Link to this section copied");
+                track("Link copied", { kind: "section", page: PAGE });
+            });
+            h.appendChild(b);
+        });
+
+        /* image viewer: hero, figures and slides open full size */
+        var imgs = Array.prototype.slice.call(body.querySelectorAll(".case-hero img, .case-figure img, .image-stack img, .evo img"));
+        if (imgs.length && window.HTMLDialogElement) {
+            var lb = document.createElement("dialog");
+            lb.className = "lightbox";
+            lb.setAttribute("aria-label", "Image viewer");
+            lb.innerHTML = '<div class="lb-bar"><span class="lb-count"></span><p class="lb-cap"></p>' +
+                '<button type="button" class="lb-btn" data-go="-1" aria-label="Previous image">←</button>' +
+                '<button type="button" class="lb-btn" data-go="1" aria-label="Next image">→</button>' +
+                '<button type="button" class="lb-btn lb-close" aria-label="Close viewer">Close</button></div>' +
+                '<div class="lb-stage"><img alt=""></div>';
+            document.body.appendChild(lb);
+            var lbImg = lb.querySelector(".lb-stage img"), stage = lb.querySelector(".lb-stage");
+            var cap = lb.querySelector(".lb-cap"), counter = lb.querySelector(".lb-count");
+            var list = [], at = 0;
+
+            var show = function (i) {
+                at = (i + list.length) % list.length;
+                var src = list[at];
+                lbImg.src = src.currentSrc || src.src;
+                lbImg.alt = src.alt;
+                lb.classList.toggle("is-tall", src.naturalHeight > src.naturalWidth * 1.4);
+                var fig = src.closest("figure");
+                var fc = fig && fig.querySelector("figcaption");
+                cap.textContent = fc ? fc.textContent : src.alt;
+                counter.textContent = list.length > 1 ? (at + 1) + " / " + list.length : "";
+                lb.querySelectorAll("[data-go]").forEach(function (b) { b.hidden = list.length < 2; });
+                stage.scrollTop = 0;
+            };
+            var open = function (img) {
+                // slides page through their own deck; figures page through the visible figures
+                var group = img.closest(".image-stack");
+                list = (group ? Array.prototype.slice.call(group.querySelectorAll("img")) : imgs.filter(function (x) {
+                    return !x.closest(".image-stack") && !x.classList.contains("is-missing") && x.getClientRects().length;
+                }));
+                show(list.indexOf(img));
+                lb.showModal();
+                root.classList.add("lb-open");
+                track("Image opened", { page: PAGE });
+            };
+            imgs.forEach(function (img) {
+                img.tabIndex = 0;
+                img.setAttribute("role", "button");
+                img.setAttribute("aria-label", "Open image full size: " + img.alt);
+                img.classList.add("is-zoomable");
+                img.addEventListener("click", function () { if (!img.classList.contains("is-missing")) open(img); });
+                img.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(img); }
+                });
+            });
+            lb.addEventListener("close", function () {
+                root.classList.remove("lb-open");
+                var back = list[at];
+                if (back) back.focus({ preventScroll: true });
+            });
+            lb.addEventListener("click", function (e) {
+                var go = e.target.closest("[data-go]");
+                if (go) show(at + Number(go.getAttribute("data-go")));
+                else if (e.target.closest(".lb-close") || e.target === stage || e.target === lb) lb.close();
+            });
+            lb.addEventListener("keydown", function (e) {
+                if (e.key === "Escape") { e.preventDefault(); lb.close(); }
+                else if (e.key === "ArrowRight" && list.length > 1) { e.preventDefault(); show(at + 1); }
+                else if (e.key === "ArrowLeft" && list.length > 1) { e.preventDefault(); show(at - 1); }
+            });
+        }
+
+        /* mobile: floating contents button and sheet */
+        var toc = document.querySelector(".case-side .toc");
+        if (toc && window.HTMLDialogElement) {
+            var fab = document.createElement("button");
+            fab.type = "button";
+            fab.className = "toc-fab";
+            fab.setAttribute("aria-haspopup", "dialog");
+            fab.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h13"/></svg><span>Contents</span><b></b>';
+            var sheet = document.createElement("dialog");
+            sheet.className = "toc-sheet";
+            sheet.setAttribute("aria-label", "On this page");
+            sheet.innerHTML = '<div class="toc-sheet-head"><b>On this page</b><button type="button" class="lb-btn" aria-label="Close contents">Close</button></div>';
+            var copy = toc.cloneNode(true);
+            sheet.appendChild(copy);
+            document.body.appendChild(fab);
+            document.body.appendChild(sheet);
+            var label = fab.querySelector("b");
+            document.addEventListener("tocchange", function (e) {
+                var cur = null;
+                copy.querySelectorAll("a").forEach(function (a) {
+                    var on = a.getAttribute("href") === "#" + e.detail;
+                    a.classList.toggle("is-active", on);
+                    if (on) cur = a;
+                });
+                label.textContent = cur ? cur.textContent : "";
+            });
+            var act = toc.querySelector("a.is-active");
+            if (act) label.textContent = act.textContent;
+            fab.addEventListener("click", function () { sheet.showModal(); });
+            sheet.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); sheet.close(); } });
+            sheet.addEventListener("click", function (e) {
+                if (e.target === sheet || e.target.closest(".lb-btn") || e.target.closest("a")) sheet.close();
+            });
+        }
+
+        /* n / p: next and previous case study */
+        document.addEventListener("keydown", function (e) {
+            if (!plainKey(e)) return;
+            var k = e.key.toLowerCase();
+            var a = k === "n" ? document.querySelector(".next-case") : k === "p" ? document.querySelector(".prev-case") : null;
+            if (a) location.href = a.href;
+        });
+
+        /* print: open every collapsible so nothing prints folded */
+        var opened = [];
+        window.addEventListener("beforeprint", function () {
+            opened = Array.prototype.filter.call(body.querySelectorAll("details:not([open])"), function (d) { d.open = true; return true; });
+        });
+        window.addEventListener("afterprint", function () {
+            opened.forEach(function (d) { d.open = false; });
+            opened = [];
+        });
+    })();
+
+    /* ---------- Keyboard shortcuts: press ? for the list ---------- */
+    (function () {
+        var root = document.documentElement;
+        if (!window.HTMLDialogElement) return;
+        var isCase = !!document.querySelector(".case-body");
+        var hasRead = !!document.querySelector("[data-read-toggle]");
+        var hasSide = !!document.querySelector(".side-toggle");
+        var rows = [["?", "Show this list"]];
+        if (hasSide) rows.push(["[", "Show or hide the side panel"]);
+        if (hasRead) rows.push(["T", "Switch between Full and TL;DR"]);
+        if (isCase) rows.push(["N", "Next case study"], ["P", "Previous case study"], ["← →", "Previous / next image in the viewer"]);
+        rows.push(["L", "Lights on or off"], ["Esc", "Close any panel or viewer"]);
+
+        var dlg = document.createElement("dialog");
+        dlg.className = "keys-dialog";
+        dlg.setAttribute("aria-labelledby", "keys-title");
+        dlg.innerHTML = '<div class="toc-sheet-head"><b id="keys-title">Keyboard shortcuts</b><button type="button" class="lb-btn" aria-label="Close shortcuts">Close</button></div>' +
+            '<dl class="keys-list">' + rows.map(function (r) {
+                return "<div><dt>" + r[0].split(" ").map(function (k) { return "<kbd>" + k + "</kbd>"; }).join(" ") + "</dt><dd>" + r[1] + "</dd></div>";
+            }).join("") + "</dl>";
+        document.body.appendChild(dlg);
+        dlg.addEventListener("click", function (e) { if (e.target === dlg || e.target.closest(".lb-btn")) dlg.close(); });
+        dlg.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); dlg.close(); } });
+
+        function openKeys() { if (!dlg.open) { dlg.showModal(); track("Shortcuts opened"); } }
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "?" && plainKey(e)) { e.preventDefault(); openKeys(); return; }
+            if (!plainKey(e)) return;
+            if (e.key.toLowerCase() === "l") {
+                var knob = document.querySelector(".pullcord-knob");
+                if (knob) knob.click();
+            }
+        });
+
+        // a way in for pointer users: a link at the bottom of the reading settings
+        var panel = document.querySelector(".a11y-panel");
+        if (panel) {
+            var hint = document.createElement("button");
+            hint.type = "button";
+            hint.className = "keys-hint";
+            hint.innerHTML = "Keyboard shortcuts <kbd>?</kbd>";
+            hint.addEventListener("click", openKeys);
+            panel.appendChild(hint);
+        }
+
+        // and a one-time nudge on the first visit with a real keyboard
+        try {
+            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches && !localStorage.getItem("keys-hint")) {
+                setTimeout(function () {
+                    toast("Tip: press ? for keyboard shortcuts");
+                    localStorage.setItem("keys-hint", "1");
+                }, 4000);
+            }
+        } catch (e) { }
+    })();
+
+    // #region highlighter  (shown on play-highlighter.html, which reads this file between the region markers)
+    /* ---------- Text selection, iOS style: drag handles + Copy / Highlight ----------
+       Highlights are character ranges over the page's text, each with a colour and
+       a random seed. The seed draws a one-off marker stroke (uneven edges, chisel
+       tips, a denser double pass, felt streaks), so no two highlights look alike.
+       They're saved per page as text quotes (prefix + text + suffix), so they survive
+       reloads even when live text (clock, demos) changes length. Handles and the
+       glass menu are desktop only; touch devices keep their native selection UI. */
+    (function () {
+        var EXCLUDE = "script, style, noscript, template, svg, input, textarea, select, .sel-ui, [data-clock], [data-status], [data-hl-skip]";
+        var STORE = "hl:" + location.pathname;
+        var LAST = "hl:color";
+        var CTX = 32;
+        var html = document.documentElement;
+        // [light themes, dark themes]
+        var INK = {
+            yellow: ["#ffe94a", "#ffd60a"],
+            green: ["#86f76a", "#4cd964"],
+            pink: ["#ff8cc6", "#ff5fa8"],
+            blue: ["#7dd3ff", "#40a9ff"]
+        };
+        var COLORS = Object.keys(INK);
+
+        function lsGet(k) { try { return localStorage.getItem(k); } catch (err) { return null; } }
+        function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (err) { /* blocked */ } }
+        function lastColor() { var c = lsGet(LAST); return INK[c] ? c : "yellow"; }
+
+        function accept(n) {
+            var p = n.parentElement;
+            return p && !p.closest(EXCLUDE) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+        function textNodes(within) {
+            var w = document.createTreeWalker(within || document.body, NodeFilter.SHOW_TEXT, { acceptNode: accept });
+            var out = [], n;
+            while ((n = w.nextNode())) out.push(n);
+            return out;
+        }
+        function joinText(nodes) { return nodes.map(function (n) { return n.data; }).join(""); }
+
+        // character offset of a DOM boundary point, counted over `nodes`
+        function offsetOf(nodes, container, offset) {
+            var b = document.createRange();
+            b.setStart(container, offset);
+            var acc = 0;
+            for (var i = 0; i < nodes.length; i++) {
+                var t = nodes[i];
+                if (t === container) return acc + offset;
+                if (b.comparePoint(t, t.length) <= 0) acc += t.length; else return acc;
+            }
+            return acc;
+        }
+        function pointAt(nodes, pos, atEnd) {
+            var acc = 0;
+            for (var i = 0; i < nodes.length; i++) {
+                var len = nodes[i].length;
+                if (pos < acc + len || (atEnd && pos === acc + len)) return { node: nodes[i], offset: pos - acc };
+                acc += len;
+            }
+            var last = nodes[nodes.length - 1];
+            return last ? { node: last, offset: last.length } : null;
+        }
+
+        /* ---- the marker stroke: three SVG layers (left tip, body, right tip) ---- */
+        function rng(seed) {
+            return function () {
+                seed = (seed + 0x6D2B79F5) | 0;
+                var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+        function isDark() { return /^(dark|oled|slate)$/.test(html.dataset.theme || ""); }
+        function svgUrl(w, body) {
+            return 'url("data:image/svg+xml,' + encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' 24" preserveAspectRatio="none">' + body + "</svg>") + '")';
+        }
+        // the feel of the stroke; the sliders on play-highlighter.html tune these live
+        var DEFAULTS = { ink: 0.78, wobble: 2, tip: 7, streaks: 2, pass: 0.24 };
+        var CFG = {};
+        Object.keys(DEFAULTS).forEach(function (k) { CFG[k] = DEFAULTS[k]; });
+        var imgCache = {};
+        function strokeImages(color, seed) {
+            var dark = isDark(), key = color + "|" + seed + "|" + dark;
+            if (imgCache[key]) return imgCache[key];
+            var R = rng(seed), f = function (n) { return n.toFixed(2); };
+            var hex = (INK[color] || INK.yellow)[dark ? 1 : 0];
+            // On dark themes the ink goes near-solid and the text turns dark on it (see
+            // site.css), like a real marker on paper. No edge line there: against a dark
+            // page it reads as an outline, not as ink pooling at the edge of the stroke.
+            var a = dark ? Math.min(1, CFG.ink + 0.12) : CFG.ink, edgeA = 0.55;
+            var top = 2 + R() * 1.8, bot = 22 - R() * 1.8;
+            var fill = 'fill="' + hex + '" fill-opacity="' + a + '"';
+            var edge = 'fill="none" stroke="' + hex + '" stroke-opacity="' + edgeA + '" stroke-width="1" vector-effect="non-scaling-stroke"';
+
+            // body: wobbly top and bottom edges that meet the tips at fixed heights
+            var n = 9, tp = [], bp = [], i;
+            for (i = 0; i <= n; i++) {
+                var x = 200 * i / n, inner = i > 0 && i < n ? 1 : 0;
+                tp.push(f(x) + "," + f(top + inner * (R() - 0.5) * CFG.wobble));
+                bp.push(f(x) + "," + f(bot + inner * (R() - 0.5) * CFG.wobble));
+            }
+            var topEdge = "M" + tp.join(" L"), botEdge = "M" + bp.join(" L");
+            var bodyPath = topEdge + " L" + bp.slice().reverse().join(" L") + "Z";
+            // a second, denser pass over part of the stroke
+            var x1 = R() * 70, x2 = 200 - R() * 70, y1 = top + 1 + R() * 3, y2 = bot - 1 - R() * 3;
+            var pass = '<path d="M' + f(x1) + "," + f(y1 + R()) + " L" + f(x2) + "," + f(y1 + R()) + " L" + f(x2) + "," + f(y2 - R()) +
+                " L" + f(x1) + "," + f(y2 - R()) + 'Z" fill="' + hex + '" fill-opacity="' + (dark ? CFG.pass * 0.4 : CFG.pass) + '"/>';
+            // felt streaks: thin lighter lines where the nib skipped
+            var streaks = "", sc = "#fff", count = Math.round(CFG.streaks) + (CFG.streaks > 0 && R() > 0.5 ? 1 : 0);
+            for (i = 0; i < count; i++) {
+                var sy = top + 3 + R() * (bot - top - 6), sx = R() * 60;
+                streaks += '<rect x="' + f(sx) + '" y="' + f(sy) + '" width="' + f(80 + R() * 120) + '" height="' + f(0.35 + R() * 0.5) +
+                    '" fill="' + sc + '" fill-opacity="' + f((dark ? 0.08 : 0.1) + R() * 0.12) + '"/>';
+            }
+            var body = svgUrl(200, '<path d="' + bodyPath + '" ' + fill + "/>" + pass + streaks +
+                (dark ? "" : '<path d="' + topEdge + '" ' + edge + '/><path d="' + botEdge + '" ' + edge + "/>"));
+
+            // chisel tips, each slanted and rounded a little differently
+            function tip(left) {
+                var t1 = 1 + R() * 4, t2 = 0.5 + R() * 3, bulge = R() * 2;
+                var mid = (top + bot) / 2 + (R() - 0.5) * 4;
+                var outline = left
+                    ? "M10," + f(top) + " L" + f(t1 + 2) + "," + f(top) + " Q" + f(bulge) + "," + f(mid) + " " + f(t2 + 2) + "," + f(bot) + " L10," + f(bot)
+                    : "M0," + f(top) + " L" + f(8 - t2) + "," + f(top) + " Q" + f(10 - bulge) + "," + f(mid) + " " + f(8 - t1) + "," + f(bot) + " L0," + f(bot);
+                return svgUrl(10, '<path d="' + outline + 'Z" ' + fill + "/>" + (dark ? "" : '<path d="' + outline + '" ' + edge + "/>"));
+            }
+            return (imgCache[key] = tip(true) + ", " + tip(false) + ", " + body);
+        }
+
+        /* ---- highlight model: sorted, non-overlapping {s, e, c, v} ---- */
+        function byStart(a, b) { return a.s - b.s; }
+        function addTo(list, n) {
+            var keep = [], span = { s: n.s, e: n.e, c: n.c, v: n.v };
+            list.forEach(function (x) {
+                if (x.e < n.s || x.s > n.e) keep.push(x);
+                else { span.s = Math.min(span.s, x.s); span.e = Math.max(span.e, x.e); }
+            });
+            keep.push(span);
+            return keep.sort(byStart);
+        }
+        function subtract(list, s, e) {
+            var out = [];
+            list.forEach(function (x) {
+                if (x.e <= s || x.s >= e) { out.push(x); return; }
+                if (x.s < s) out.push({ s: x.s, e: s, c: x.c, v: x.v });
+                if (x.e > e) out.push({ s: e, e: x.e, c: x.c, v: x.v + 1 });
+            });
+            return out;
+        }
+        // read highlights back out of the DOM; whitespace-only gaps don't split one
+        function readMarks(nodes) {
+            var list = [], acc = 0, cur = null;
+            nodes.forEach(function (t) {
+                var len = t.length;
+                if (!len) return;
+                var m = t.parentElement.closest("mark.hl");
+                if (m) {
+                    var v = +m.dataset.v;
+                    if (cur && cur.v === v) cur.e = acc + len;
+                    else { cur = { s: acc, e: acc + len, c: m.dataset.c, v: v }; list.push(cur); }
+                } else if (/\S/.test(t.data)) cur = null;
+                acc += len;
+            });
+            return list;
+        }
+
+        function unwrapAll() {
+            var parents = [];
+            document.querySelectorAll("mark.hl").forEach(function (m) {
+                var p = m.parentNode;
+                while (m.firstChild) p.insertBefore(m.firstChild, m);
+                p.removeChild(m);
+                if (parents.indexOf(p) < 0) parents.push(p);
+            });
+            parents.forEach(function (p) { p.normalize(); });
+        }
+        // whitespace that doesn't render (between blocks, flex/grid items) stays bare,
+        // or the mark's padding would paint a stray blob of ink
+        function layoutOnlyWhitespace(t) {
+            if (/\S/.test(t.data)) return false;
+            var r = document.createRange();
+            r.selectNodeContents(t);
+            var rects = r.getClientRects();
+            for (var i = 0; i < rects.length; i++) if (rects[i].width > 0) return false;
+            return true;
+        }
+        function wrap(h) {
+            var nodes = textNodes(), acc = 0, targets = [];
+            nodes.forEach(function (t) {
+                var len = t.length, a = Math.max(h.s, acc), b = Math.min(h.e, acc + len);
+                if (b > a) targets.push([t, a - acc, b - acc]);
+                acc += len;
+            });
+            targets.forEach(function (x) {
+                var t = x[0];
+                if (layoutOnlyWhitespace(t)) return;
+                if (x[2] < t.length) t.splitText(x[2]);
+                if (x[1] > 0) t = t.splitText(x[1]);
+                var m = document.createElement("mark");
+                m.className = "hl";
+                m.dataset.c = h.c;
+                m.dataset.v = h.v;
+                t.parentNode.insertBefore(m, t);
+                m.appendChild(t);
+            });
+        }
+        // paint every mark; a mark that runs straight on from the previous piece of
+        // the same highlight drops its tip there, so one stroke reads as one stroke
+        function blockOf(n) {
+            var e = n.parentElement;
+            while (e && e !== document.body && /^(inline|contents)$/.test(getComputedStyle(e).display)) e = e.parentElement;
+            return e;
+        }
+        // static, non-interactive examples (e.g. the Play cards) use .hl-paint
+        function paintStatic() {
+            document.querySelectorAll(".hl-paint").forEach(function (p) {
+                p.style.backgroundImage = strokeImages(p.dataset.c || "yellow", +p.dataset.v || 1);
+            });
+        }
+        function decorate() {
+            paintStatic();
+            var prev = null;
+            textNodes().forEach(function (t) {
+                if (!t.length) return;
+                var m = t.parentElement.closest("mark.hl");
+                if (m) {
+                    var joined = prev && prev !== m && prev.dataset.v === m.dataset.v && blockOf(prev) === blockOf(m);
+                    if (prev !== m) {
+                        m.classList.toggle("is-join-l", !!joined);
+                        m.classList.remove("is-join-r");
+                        m.style.backgroundImage = strokeImages(m.dataset.c, +m.dataset.v);
+                    }
+                    if (joined) prev.classList.add("is-join-r");
+                    prev = m;
+                } else if (/\S/.test(t.data)) prev = null;
+            });
+        }
+        function render(list) {
+            unwrapAll();
+            list.forEach(wrap);
+            decorate();
+        }
+        function emit(list) {
+            document.dispatchEvent(new CustomEvent("highlights:change", {
+                detail: { list: list.map(function (h) { return { c: h.c, v: h.v }; }) }
+            }));
+        }
+        function save(list, text) {
+            emit(list);
+            lsSet(STORE, list.length ? JSON.stringify(list.map(function (h) {
+                return { p: text.slice(Math.max(0, h.s - CTX), h.s), q: text.slice(h.s, h.e), s: text.slice(h.e, h.e + CTX), c: h.c, v: h.v };
+            })) : null);
+        }
+        function newSeed() { return (Math.random() * 1e9) | 0; }
+        function restore() {
+            var data = [];
+            try { data = JSON.parse(lsGet(STORE) || "[]") || []; } catch (err) { data = []; }
+            if (!data.length) return;
+            var text = joinText(textNodes()), list = [];
+            data.forEach(function (d) {
+                if (!d || !d.q) return;
+                var i = text.indexOf((d.p || "") + d.q + (d.s || ""));
+                if (i >= 0) i += (d.p || "").length; else i = text.indexOf(d.q);
+                if (i >= 0) list.push({ s: i, e: i + d.q.length, c: INK[d.c] ? d.c : "yellow", v: d.v || newSeed() });
+            });
+            if (list.length) render(list.sort(byStart));
+        }
+        restore();
+        paintStatic();
+        // themes change the ink, so repaint strokes when the theme flips
+        new MutationObserver(function () { if (document.querySelector("mark.hl, .hl-paint")) decorate(); })
+            .observe(html, { attributes: true, attributeFilter: ["data-theme"] });
+
+        // small API for the Play page: live tuning, a first-visit demo, and change events
+        window.Highlighter = {
+            config: CFG,
+            defaults: DEFAULTS,
+            count: function () { return readMarks(textNodes()); },
+            repaint: function () {
+                imgCache = {};
+                html.style.setProperty("--hl-tip", CFG.tip + "px");
+                decorate();
+            },
+            // on a first visit, highlight a few phrases inside `root` so there's something to play with
+            seed: function (root, items) {
+                var flag = STORE + ":seeded";
+                if (lsGet(STORE) || lsGet(flag)) return;
+                var nodes = textNodes(), text = joinText(nodes);
+                var base = offsetOf(nodes, root, 0), local = joinText(textNodes(root)), list = [];
+                items.forEach(function (it) {
+                    var i = local.indexOf(it.text);
+                    if (i >= 0) list.push({ s: base + i, e: base + i + it.text.length, c: it.c, v: newSeed() });
+                });
+                if (!list.length) return;
+                list.sort(byStart);
+                render(list);
+                save(list, text);
+                lsSet(flag, "1");
+            }
+        };
+        emit(readMarks(textNodes()));
+
+        if (!window.matchMedia || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+        /* ---- UI: two handles and the glass menu ---- */
+        function el(tag, cls, inner) {
+            var x = document.createElement(tag);
+            x.className = cls;
+            if (inner) x.innerHTML = inner;
+            return x;
+        }
+        var hStart = el("div", "sel-ui sel-handle is-start", "<i></i>");
+        var hEnd = el("div", "sel-ui sel-handle is-end", "<i></i>");
+        var menu = el("div", "sel-ui sel-menu",
+            '<span class="sel-blob" aria-hidden="true"></span>' +
+            '<div class="sel-row">' +
+                '<button type="button" class="sel-btn" data-act="copy">Copy</button>' +
+                '<span class="sel-sep" aria-hidden="true"></span>' +
+                '<button type="button" class="sel-btn sel-add" data-act="hl">Highlight</button>' +
+                '<span class="sel-edit sel-colors">' + COLORS.map(function (c) {
+                    return '<button type="button" class="sel-dot" data-color="' + c + '" aria-label="' +
+                        c.charAt(0).toUpperCase() + c.slice(1) + '" style="--dot: var(--hl-' + c + ')"></button>';
+                }).join("") + "</span>" +
+                '<span class="sel-edit sel-sep" aria-hidden="true"></span>' +
+                '<button type="button" class="sel-btn sel-edit" data-act="rm">Remove</button>' +
+            "</div>");
+        hStart.setAttribute("aria-hidden", "true");
+        hEnd.setAttribute("aria-hidden", "true");
+        menu.setAttribute("role", "toolbar");
+        menu.setAttribute("aria-label", "Selection");
+        menu.dataset.mode = "add";
+        document.body.appendChild(hStart);
+        document.body.appendChild(hEnd);
+        document.body.appendChild(menu);
+        var row = menu.querySelector(".sel-row");
+        var blob = menu.querySelector(".sel-blob");
+        var copyBtn = menu.querySelector('[data-act="copy"]');
+
+        var pointerDown = false, dragging = false, dismissed = false, raf = 0, trackTimer = 0;
+        var lastPt = null, model = null, hovered = null;
+
+        function currentRange() {
+            var sel = window.getSelection();
+            if (!sel || !sel.rangeCount || sel.isCollapsed) return null;
+            var r = sel.getRangeAt(0);
+            var c = r.commonAncestorContainer;
+            var ce = c.nodeType === 1 ? c : c.parentElement;
+            if (!ce || ce.closest(".sel-ui, input, textarea, select, [contenteditable]:not([contenteditable='false'])")) return null;
+            return r;
+        }
+
+        // rects of the first and last visible, non-space characters in the range
+        function charRect(t, i) {
+            var cr = document.createRange();
+            cr.setStart(t, i);
+            cr.setEnd(t, i + 1);
+            var rs = cr.getClientRects();
+            return rs.length ? rs[rs.length - 1] : null;
+        }
+        // rects of the first and last characters that are actually painted in the range.
+        // Spaces count (the browser tints them too); collapsed source whitespace has no
+        // width and is skipped, so the handles sit exactly where the blue tint starts and ends.
+        function edges(r) {
+            var c = r.commonAncestorContainer;
+            var nodes = textNodes(c.nodeType === 3 ? c.parentNode : c).filter(function (t) { return r.intersectsNode(t); });
+            var first = null, last = null, i, j, t, lo, hi, rect;
+            for (i = 0; i < nodes.length && !first; i++) {
+                t = nodes[i];
+                lo = t === r.startContainer ? r.startOffset : 0;
+                hi = t === r.endContainer ? r.endOffset : t.length;
+                for (j = lo; j < hi && !first; j++) {
+                    rect = charRect(t, j);
+                    if (rect && rect.width > 0 && rect.height > 0) first = rect;
+                    else if (!/\s/.test(t.data[j])) break; // hidden text: try the next node
+                }
+            }
+            for (i = nodes.length - 1; i >= 0 && !last; i--) {
+                t = nodes[i];
+                lo = t === r.startContainer ? r.startOffset : 0;
+                hi = t === r.endContainer ? r.endOffset : t.length;
+                for (j = hi - 1; j >= lo && !last; j--) {
+                    rect = charRect(t, j);
+                    if (rect && rect.width > 0 && rect.height > 0) last = rect;
+                    else if (!/\s/.test(t.data[j])) break;
+                }
+            }
+            return first && last ? { first: first, last: last } : null;
+        }
+
+        function placeHandle(h, x, y, height) {
+            var fresh = !h.classList.contains("is-on");
+            if (fresh) h.classList.add("is-placing");
+            h.style.setProperty("--x", Math.round(x - 1) + "px");
+            h.style.setProperty("--y", Math.round(y) + "px");
+            h.style.setProperty("--h", Math.round(height) + "px");
+            h.classList.add("is-on");
+            if (fresh) { void h.offsetWidth; h.classList.remove("is-placing"); }
+        }
+        function hideHandles() { hStart.classList.remove("is-on"); hEnd.classList.remove("is-on"); }
+        function hideMenu() {
+            menu.classList.remove("is-open");
+            html.classList.remove("hl-editing");
+            hideBlob();
+        }
+        function hideAll() { hideHandles(); hideMenu(); }
+
+        // where the selection sits in the highlight model
+        function selectionModel(r) {
+            var nodes = textNodes(), text = joinText(nodes);
+            var s = offsetOf(nodes, r.startContainer, r.startOffset);
+            var e = offsetOf(nodes, r.endContainer, r.endOffset);
+            while (s < e && /\s/.test(text[s])) s++;
+            while (e > s && /\s/.test(text[e - 1])) e--;
+            var list = readMarks(nodes);
+            var hit = e > s ? list.filter(function (x) { return x.s <= s && x.e >= e; })[0] : null;
+            return { s: s, e: e, text: text, list: list, hit: hit || null };
+        }
+
+        /* liquid hover: one glass blob glides between the buttons */
+        function moveBlob(b) {
+            hovered = b;
+            var fresh = !blob.classList.contains("is-on");
+            if (fresh) blob.classList.add("is-placing");
+            blob.style.setProperty("--bx", b.offsetLeft + "px");
+            blob.style.setProperty("--bw", b.offsetWidth + "px");
+            if (fresh) { void blob.offsetWidth; blob.classList.remove("is-placing"); }
+            blob.classList.add("is-on");
+        }
+        function hideBlob() { hovered = null; blob.classList.remove("is-on"); }
+        row.addEventListener("pointerover", function (e) {
+            var b = e.target.closest(".sel-btn");
+            if (b) moveBlob(b); else hideBlob();
+        });
+        menu.addEventListener("pointerleave", hideBlob);
+
+        function setMode(m) {
+            model = m;
+            var mode = m.hit ? "edit" : "add";
+            menu.dataset.mode = mode;
+            copyBtn.textContent = "Copy";
+            menu.querySelectorAll(".sel-dot").forEach(function (d) {
+                d.classList.toggle("is-current", !!m.hit && d.dataset.color === m.hit.c);
+            });
+        }
+        function menuWidth() { return row.offsetWidth + 8; }
+        function fitWidth() {
+            menu.style.width = menuWidth() + "px";
+            if (hovered) moveBlob(hovered);
+        }
+
+        function layout(kind) {
+            var r = currentRange();
+            var ed = r && edges(r);
+            if (!ed) { hideAll(); return; }
+            placeHandle(hStart, ed.first.left, ed.first.top, ed.first.height);
+            placeHandle(hEnd, ed.last.right, ed.last.top, ed.last.height);
+
+            if (pointerDown || dragging || dismissed) { hideMenu(); return; }
+            var opening = !menu.classList.contains("is-open");
+            if (kind === "full" || opening) setMode(selectionModel(r));
+            var vw = window.innerWidth, vh = window.innerHeight;
+            if (ed.last.bottom < 0 || ed.first.top > vh) { hideMenu(); return; }
+
+            var box = r.getBoundingClientRect();
+            var mw = menuWidth(), mh = menu.offsetHeight, gap = 18;
+            var cx = (Math.max(box.left, 0) + Math.min(box.right, vw)) / 2;
+            var x = Math.min(Math.max(cx - mw / 2, 8), vw - mw - 8);
+            var y = ed.first.top - mh - gap, below = false;
+            if (y < 8) { y = ed.last.bottom + gap; below = true; }
+            y = Math.min(Math.max(y, 8), vh - mh - 8);
+
+            if (opening) menu.classList.add("is-placing");
+            else if (kind === "track") menu.classList.add("is-tracking");
+            menu.style.setProperty("--x", Math.round(x) + "px");
+            menu.style.setProperty("--y", Math.round(y) + "px");
+            menu.style.setProperty("--ox", Math.round(Math.min(Math.max(cx - x, 16), mw - 16)) + "px");
+            menu.classList.toggle("is-below", below);
+            fitWidth();
+            if (opening) {
+                void menu.offsetWidth;
+                menu.classList.remove("is-placing");
+            }
+            menu.classList.add("is-open");
+            html.classList.toggle("hl-editing", menu.dataset.mode === "edit");
+        }
+        function schedule(kind) {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(function () { layout(kind); });
+        }
+
+        /* ---- caret helpers ---- */
+        function caretAt(x, y) {
+            var c = null;
+            if (document.caretPositionFromPoint) {
+                var p = document.caretPositionFromPoint(x, y);
+                if (p && p.offsetNode) c = { node: p.offsetNode, offset: p.offset };
+            } else if (document.caretRangeFromPoint) {
+                var r = document.caretRangeFromPoint(x, y);
+                if (r) c = { node: r.startContainer, offset: r.startOffset };
+            }
+            if (!c) return null;
+            var ce = c.node.nodeType === 1 ? c.node : c.node.parentElement;
+            return ce && !ce.closest(EXCLUDE) && ce !== document.body && ce !== html ? c : null;
+        }
+        function compare(a, b) {
+            var r = document.createRange();
+            r.setStart(b.node, b.offset);
+            return r.comparePoint(a.node, a.offset); // -1: a before b, 1: a after b
+        }
+
+        /* While the browser is drag-selecting, the pointer can pass over a gap
+           (between blocks, columns, or past the end of a line) and the browser
+           briefly snaps the selection to the whole page. If the focus lands on the
+           page itself or far from the pointer, pull it back to the text under it. */
+        function stabilize() {
+            if (!pointerDown || !lastPt) return;
+            var sel = window.getSelection();
+            if (!sel.rangeCount || !sel.focusNode) return;
+            var fn = sel.focusNode, fe = fn.nodeType === 1 ? fn : fn.parentElement;
+            var bad = !fe || fe === document.body || fe === html || !!fe.closest(".sel-ui");
+            if (!bad && fn.nodeType === 3) {
+                var fr = document.createRange();
+                fr.setStart(fn, sel.focusOffset);
+                var rect = fr.getBoundingClientRect();
+                bad = rect.height > 0 && Math.abs(rect.top + rect.height / 2 - lastPt.y) > Math.max(160, window.innerHeight / 3);
+            }
+            if (!bad) return;
+            var c = caretAt(lastPt.x, lastPt.y);
+            if (c) { try { sel.extend(c.node, c.offset); } catch (err) { /* ignore */ } }
+        }
+
+        document.addEventListener("selectionchange", function () {
+            if (!dragging) dismissed = false;
+            if (pointerDown) stabilize();
+            schedule("full");
+        });
+        document.addEventListener("pointerdown", function (e) {
+            if (e.button !== 0 || (e.target.closest && e.target.closest(".sel-ui"))) return;
+            pointerDown = true;
+            lastPt = { x: e.clientX, y: e.clientY };
+            html.classList.add("sel-native");
+            hideMenu();
+        }, true);
+        document.addEventListener("pointermove", function (e) {
+            if (pointerDown) lastPt = { x: e.clientX, y: e.clientY };
+        }, { passive: true, capture: true });
+        document.addEventListener("pointerup", function (e) {
+            if (!pointerDown) return;
+            pointerDown = false;
+            html.classList.remove("sel-native");
+            var target = e.target;
+            setTimeout(function () {
+                var sel = window.getSelection();
+                var mark = target && target.closest && target.closest("mark.hl");
+                if (sel && sel.isCollapsed && mark && !target.closest("a, button, label")) selectHighlight(mark);
+                else schedule("full");
+            }, 0);
+        }, true);
+        window.addEventListener("pointercancel", function () { pointerDown = false; html.classList.remove("sel-native"); });
+        window.addEventListener("scroll", function () {
+            html.classList.add("sel-scrolling");
+            clearTimeout(trackTimer);
+            trackTimer = setTimeout(function () {
+                html.classList.remove("sel-scrolling");
+                menu.classList.remove("is-tracking");
+            }, 160);
+            schedule("track");
+        }, { passive: true, capture: true });
+        window.addEventListener("resize", function () { schedule("track"); });
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && menu.classList.contains("is-open")) {
+                window.getSelection().removeAllRanges();
+                hideAll();
+            }
+        });
+
+        // clicking a highlight selects all of it and opens the colour menu
+        function selectHighlight(mark) {
+            var nodes = textNodes();
+            var at = offsetOf(nodes, mark, 0);
+            var hit = readMarks(nodes).filter(function (x) { return x.s <= at && x.e > at; })[0];
+            if (!hit) return;
+            var a = pointAt(nodes, hit.s, false), b = pointAt(nodes, hit.e, true);
+            if (a && b) window.getSelection().setBaseAndExtent(a.node, a.offset, b.node, b.offset);
+        }
+        function marksOf(v) { return document.querySelectorAll('mark.hl[data-v="' + v + '"]'); }
+
+        /* ---- menu actions ---- */
+        menu.addEventListener("pointerdown", function (e) { e.preventDefault(); });
+        menu.addEventListener("mousedown", function (e) { e.preventDefault(); });
+
+        function copySelection() {
+            var text = window.getSelection().toString();
+            function legacy() {
+                try { return document.execCommand("copy") ? Promise.resolve() : Promise.reject(); }
+                catch (err) { return Promise.reject(err); }
+            }
+            if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text).catch(legacy);
+            return legacy();
+        }
+        function close() { dismissed = true; hideMenu(); }
+
+        menu.addEventListener("click", function (e) {
+            var b = e.target.closest("button");
+            if (!b) return;
+            var act = b.dataset.act, color = b.dataset.color;
+            var r = currentRange();
+            if (!r) return;
+
+            if (act === "copy") {
+                copySelection().then(function () {
+                    copyBtn.textContent = "Copied";
+                    fitWidth();
+                    setTimeout(close, 700);
+                }, close);
+                return;
+            }
+
+            var m = selectionModel(r);
+            if (m.e <= m.s) return;
+
+            if (act === "hl") {
+                var h = { s: m.s, e: m.e, c: lastColor(), v: newSeed() };
+                var list = addTo(m.list, h);
+                window.getSelection().removeAllRanges();
+                hideAll();
+                render(list);
+                save(list, m.text);
+                marksOf(h.v).forEach(function (mk, i) {
+                    mk.style.animationDelay = i * 70 + "ms";
+                    mk.classList.add("is-drawing");
+                    mk.addEventListener("animationend", function () {
+                        mk.classList.remove("is-drawing");
+                        mk.style.animationDelay = "";
+                    }, { once: true });
+                });
+                return;
+            }
+
+            if (color && m.hit) {
+                // recolour in place: same stroke, new ink, selection stays put
+                m.hit.c = color;
+                lsSet(LAST, color);
+                marksOf(m.hit.v).forEach(function (mk) {
+                    mk.dataset.c = color;
+                    mk.style.backgroundImage = strokeImages(color, m.hit.v);
+                });
+                save(m.list, m.text);
+                setMode(m);
+                return;
+            }
+
+            if (act === "rm" && m.hit) {
+                // like the colours, Remove acts on the whole highlight
+                var rest = subtract(m.list, m.hit.s, m.hit.e);
+                window.getSelection().removeAllRanges();
+                hideAll();
+                save(rest, m.text);
+                marksOf(m.hit.v).forEach(function (mk) { mk.classList.add("is-erasing"); });
+                setTimeout(function () { render(rest); }, 340);
+            }
+        });
+
+        /* ---- dragging the handles ---- */
+        [hStart, hEnd].forEach(function (h) {
+            h.firstChild.addEventListener("pointerdown", function (e) {
+                if (e.button !== 0) return;
+                var r = currentRange();
+                if (!r) return;
+                e.preventDefault();
+                e.stopPropagation();
+                var isStart = h === hStart;
+                var fixed = isStart ? { node: r.endContainer, offset: r.endOffset } : { node: r.startContainer, offset: r.startOffset };
+                var hr = h.getBoundingClientRect();
+                var dx = hr.left + 1 - e.clientX, dy = hr.top + hr.height / 2 - e.clientY;
+                var sel = window.getSelection();
+                dragging = true;
+                html.classList.add("sel-dragging");
+                hideMenu();
+
+                function move(ev) {
+                    var c = caretAt(ev.clientX + dx, ev.clientY + dy);
+                    if (!c) return;
+                    var cmp = compare(c, fixed);
+                    if (isStart ? cmp >= 0 : cmp <= 0) return;
+                    if (isStart) sel.setBaseAndExtent(c.node, c.offset, fixed.node, fixed.offset);
+                    else sel.setBaseAndExtent(fixed.node, fixed.offset, c.node, c.offset);
+                }
+                function up() {
+                    window.removeEventListener("pointermove", move);
+                    window.removeEventListener("pointerup", up);
+                    window.removeEventListener("pointercancel", up);
+                    dragging = false;
+                    html.classList.remove("sel-dragging");
+                    schedule("full");
+                }
+                window.addEventListener("pointermove", move);
+                window.addEventListener("pointerup", up);
+                window.addEventListener("pointercancel", up);
+            });
+        });
+    })();
+    // #endregion highlighter
 })();

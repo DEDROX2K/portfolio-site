@@ -9,14 +9,21 @@
 
     <meta property="og:title" content="Tallybird — Simplifying taxes for everyone">
     <meta property="og:description" content="Product design case study: the full redesign of Tallybird's Self Assessment filing web app, and a 3× jump in self-filed returns.">
-    <meta property="og:image" content="images/case/tb-cover.svg">
+    <meta property="og:image" content="https://raghavprasanna.co.uk/images/id-peek-card.png">
     <meta property="og:type" content="article">
     <meta name="twitter:card" content="summary_large_image">
 
     <link rel="icon" href="logo.png" type="image/png">
     <meta name="theme-color" content="#ffffff">
     <link rel="preload" href="Fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf" as="font" type="font/ttf" crossorigin>
-    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v})}catch(e){}</script>
+    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side","read"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v});var q=location.search;if(/[?&]tldr(=|&|$)/.test(q))d.dataset.read="tldr";else if(/[?&]full(=|&|$)/.test(q))delete d.dataset.read}catch(e){}</script>
+    <link rel="canonical" href="https://raghavprasanna.co.uk/tallybird.html">
+    <meta property="og:url" content="https://raghavprasanna.co.uk/tallybird.html">
+    <script type="application/ld+json">
+    {"@context": "https://schema.org", "@type": "CreativeWork", "@id": "https://raghavprasanna.co.uk/tallybird.html#work", "url": "https://raghavprasanna.co.uk/tallybird.html", "name": "Tripling self-filed tax returns by redesigning Tallybird", "headline": "Tripling self-filed tax returns by redesigning Tallybird", "description": "Redesigning UK Self Assessment tax filing so people could finish on their own. Self-filed returns went up 3×.", "image": "https://raghavprasanna.co.uk/images/case/tb-cover.svg", "keywords": "Fintech, Web app, UX research, Information architecture", "inLanguage": "en-GB", "author": {"@type": "Person", "@id": "https://raghavprasanna.co.uk/#person", "name": "Raghav Prasanna", "url": "https://raghavprasanna.co.uk/"}, "isPartOf": {"@id": "https://raghavprasanna.co.uk/#website"}}
+    </script>
+    <script defer data-domain="raghavprasanna.co.uk" src="https://plausible.io/js/script.outbound-links.file-downloads.tagged-events.js"></script>
+    <script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
     <link rel="stylesheet" href="site.css">
 </head>
 
@@ -30,6 +37,7 @@
             </div>
         </div>
         <nav class="site-nav" aria-label="Main">
+            <a href="play.html">Play</a>
             <a href="about.html">About</a>
             <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
             <span class="site-clock"><time data-clock>--:--</time></span>
@@ -38,19 +46,23 @@
 
     <div class="shell">
 
-        <aside class="side case-side">
-            <a class="back-link" href="./">Back to home</a>
-            <ul class="tags"><li>Fintech</li><li>Web app</li><li>Shipped</li></ul>
-            <h1 class="case-title">Tallybird</h1>
-            <p class="case-lede">Redesigning Self Assessment tax filing in the UK so people could finish on their own. Self-filed returns went up 3×.</p>
+        <aside class="side case-side" aria-label="Case study navigation">
+            <div class="case-bar">
+                <a class="back-link" href="./" aria-label="Back to home"><span>Back to home</span></a>
+            </div>
+            <div class="read-mode" role="group" aria-label="Reading length" data-read-toggle>
+                <button type="button" data-read-btn="full" aria-pressed="true">Full</button>
+                <button type="button" data-read-btn="tldr" aria-pressed="false">TL;DR</button>
+            </div>
+            <p class="read-mode-note" data-read-time></p>
             <nav aria-label="On this page">
                 <ul class="toc">
                     <li><a href="#overview">Overview</a></li>
                     <li><a href="#users">Who files</a></li>
                     <li><a href="#filing">How filing works</a></li>
                     <li><a href="#problem">What was broken</a></li>
-                    <li><a href="#moments">Where people quit</a></li>
                     <li><a href="#goals">Design goals</a></li>
+                    <li><a href="#moments">Where people quit</a></li>
                     <li><a href="#impact">Impact</a></li>
                     <li><a href="#learnings">What I learned</a></li>
                     <li><a href="#principles">Principles used</a></li>
@@ -58,46 +70,67 @@
             </nav>
         </aside>
 
-        <main class="case-body">
+        <main class="case-body has-tldr">
 
-            <!-- Overview -->
-            <section class="case-section" id="overview">
-                <h2>Overview</h2>
-                <p class="cs-lead">Nobody enjoys doing their taxes. The software shouldn't make it worse.</p>
-                <p>
-                    Tallybird is a London fintech that helps people across the UK file their Self Assessment tax return online. The first version did its job.
-                    But years of new features had stacked up, and people were getting lost halfway through.
-                </p>
-                <p>
-                    I spent three months redesigning the filing web app end to end: the structure, the flows and the
-                    visual language. Here's why we did it, and how.
-                </p>
+            <figure class="case-hero">
+                <img src="images/case/tb-cover.svg" alt="The redesigned filing screen: an expandable Income menu on the left showing five income types with amounts, and a UK property form with pre-shown options on the right" loading="eager" fetchpriority="high" decoding="async">
+            </figure>
 
-                <figure class="case-figure">
-                    <img src="images/case/tb-cover.svg" alt="The redesigned filing screen: an expandable Income menu on the left showing five income types with amounts, and a UK property form with pre-shown options on the right" loading="eager" decoding="async">
-                    <figcaption>The shipped design. Every income type is visible in the menu, and the next action is always obvious.</figcaption>
-                </figure>
+            <!-- Intro: the whole case study in one screen -->
+            <section class="case-section case-intro" id="overview" data-tldr>
+                <ul class="tags"><li>Fintech</li><li>Web app</li><li>Shipped</li></ul>
+                <h1 class="case-title">Tallybird</h1>
+                <p class="case-sub">Redesigning UK Self Assessment tax filing so people could finish it on their own.</p>
 
-                <dl class="meta-list">
-                    <dt>Role</dt>
-                    <dd>Product designer</dd>
-                    <dt>Timeline</dt>
-                    <dd>3 months</dd>
-                    <dt>Team</dt>
-                    <dd>A product manager, four engineers, and me</dd>
-                    <dt>What I did</dt>
-                    <dd>UX research · Information architecture · Prototyping · User testing · Product strategy · Visual design</dd>
+                <dl class="case-meta">
+                    <div><dt>Timeline</dt><dd>3 months</dd></div>
+                    <div><dt>Team</dt><dd>1 PM, 4 engineers, me</dd></div>
+                    <div><dt>Role</dt><dd>Product designer</dd></div>
+                    <div><dt>Skills</dt><dd>UX research, IA, prototyping, user testing, visual design</dd></div>
                 </dl>
 
-                <div class="metric-grid">
-                    <div class="metric"><span class="n">3×</span><span class="d">more returns filed without a tax expert</span></div>
-                    <div class="metric"><span class="n">24,072</span><span class="d">self-filed returns in the 2021-22 tax year, up from 7,934</span></div>
-                    <div class="metric"><span class="n">3 months</span><span class="d">from research to the shipped redesign</span></div>
+                <p class="cs-label">Long story short</p>
+                <h2 class="case-lss">I redesigned the filing flow end to end, and self-filed returns tripled in a year.</h2>
+                <p>Tallybird is a London fintech that helps people across the UK file their Self Assessment tax return online. Years of new features had stacked up, and people were getting lost halfway through. I spent three months redesigning the filing web app: the structure, the flows and the visual language.</p>
+
+                <ol class="case-points">
+                    <li>
+                        <h3><span>01</span>Research</h3>
+                        <p>Combined Hotjar, FullStory, Zendesk tickets and moderated tests to find the three screens where people gave up.</p>
+                    </li>
+                    <li>
+                        <h3><span>02</span>Design</h3>
+                        <p>Rebuilt navigation, forms and hierarchy around three rules: show the next step, fewer clicks, earn trust.</p>
+                    </li>
+                    <li>
+                        <h3><span>03</span>Strategy</h3>
+                        <p>Gave the product a structure that could hold filing and the next bet, tax planning, side by side.</p>
+                    </li>
+                </ol>
+
+                <div class="case-hmw">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 17.5h-1A3.5 3.5 0 0 1 3 14V8a3.5 3.5 0 0 1 3.5-3.5h11A3.5 3.5 0 0 1 21 8v6a3.5 3.5 0 0 1-3.5 3.5H12l-4.5 3v-3Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.2 2.4c-.5.2-.7.5-.7 1v.3M12 15.6v.01"/></svg>
+                    <p>How might we help people file their own tax return without getting lost halfway through?</p>
+                </div>
+
+                <div class="case-rows">
+                    <div class="case-row">
+                        <h3>Challenge</h3>
+                        <div>
+                            <p>People file Self Assessment once a year and forget everything in between. Years of design and engineering debt meant they <mark class="cs-mark">lost their place, skipped required items and only found the errors at submit</mark>. And the business needed the same product to stretch into tax planning.</p>
+                        </div>
+                    </div>
+                    <div class="case-row">
+                        <h3>Impact</h3>
+                        <div>
+                            <div class="case-stats"><div><b>3×</b><span>more returns filed without a tax expert</span></div><div><b>24,072</b><span>self-filed returns in 2021-22, up from 7,934</span></div><div><b>3 months</b><span>from research to the shipped redesign</span></div></div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <!-- Users -->
             <section class="case-section" id="users">
+                <p class="cs-kicker">Context</p>
                 <h2>Who files with Tallybird</h2>
                 <p>
                     Tallybird is a software-as-a-service platform for individuals and small businesses. It handles tax
@@ -131,9 +164,8 @@
                     </div>
                 </div>
             </section>
-
-            <!-- How filing works -->
             <section class="case-section" id="filing">
+                <p class="cs-kicker">Context</p>
                 <h2>How filing works</h2>
                 <p>
                     Before the design, the domain. Filing a Self Assessment tax return with HMRC comes down to four steps.
@@ -176,9 +208,8 @@
 
                 <div class="note">Each step leans on the one before it. Miss something in step 1 and it only shows up as an error in step 3. That single fact shaped most of the redesign.</div>
             </section>
-
-            <!-- Problem -->
             <section class="case-section" id="problem">
+                <p class="cs-kicker">Problem</p>
                 <h2>What was broken</h2>
                 <p>
                     The original product had done what it set out to do. But over time it collected <strong>design debt
@@ -226,10 +257,51 @@
                     <span class="arrow" aria-hidden="true"></span>
                     <div class="col"><div class="box is-key">3 drop-off moments<small>Where people gave up</small></div></div>
                 </div>
+                <p style="margin-top:40px">
+                    Put together, the drop-off data and the new tax planning scope made the call for us. Patching wasn't
+                    enough. The product needed a full redesign and rebuild.
+                </p>
             </section>
+            <section class="case-section" id="goals">
+                <p class="cs-kicker">Process</p>
+                <h2>Design goals</h2>
+                <p class="cs-lead">Make it simple, but significant.</p>
+                <p>
+                    The hard part of tax software isn't the visuals. It's taking a mountain of required information and
+                    making it feel small. Before drawing a single screen, I agreed three rules with the team. Every
+                    design decision had to pass all three.
+                </p>
 
-            <!-- Moments -->
-            <section class="case-section" id="moments">
+                <div class="cs-goals">
+                    <div class="cs-goal">
+                        <h4>Always show the next step</h4>
+                        <p>Intuitive and transparent. At any point, you know where you are, what's left, and what to do now.</p>
+                        <ul class="cs-chips"><li><a href="#p-status">Visibility of system status</a></li><li><a href="#p-goal">Goal-gradient effect</a></li></ul>
+                    </div>
+                    <div class="cs-goal">
+                        <h4>Fewer clicks, less time</h4>
+                        <p>Cut every click that doesn't earn its place. Fewer steps means less time on task, and fewer chances to give up.</p>
+                        <ul class="cs-chips"><li><a href="#p-hicks">Hick's law</a></li><li><a href="#p-fitts">Fitts's law</a></li><li><a href="#p-progressive">Progressive disclosure</a></li></ul>
+                    </div>
+                    <div class="cs-goal">
+                        <h4>Earn trust</h4>
+                        <p>People are handing over their finances. A calm, consistent interface that catches mistakes early makes them believe the final number.</p>
+                        <ul class="cs-chips"><li><a href="#p-aesthetic">Aesthetic-usability effect</a></li><li><a href="#p-consistency">Consistency</a></li><li><a href="#p-error">Error prevention</a></li></ul>
+                    </div>
+                </div>
+
+                <div data-draft data-full>
+                    <h3>From rules to screens</h3>
+                    <p>The three rules turned into sketches first, then wireframes we could test, then the shipped UI.</p>
+                    <div class="evo">
+                        <figure><img src="images/case/tb-sketch.jpg" alt="Early sketch" loading="lazy" decoding="async"><figcaption>Sketch</figcaption></figure>
+                        <figure><img src="images/case/tb-wireframe.jpg" alt="Low-fidelity wireframe" loading="lazy" decoding="async"><figcaption>Wireframe</figcaption></figure>
+                        <figure><img src="images/case/tb-cover.svg" alt="The shipped filing screen" loading="lazy" decoding="async"><figcaption>Shipped</figcaption></figure>
+                    </div>
+                </div>
+            </section>
+            <section class="case-section" id="moments" data-tldr>
+                <p class="cs-kicker">Solution</p>
                 <h2>Three moments people quit</h2>
                 <p>
                     The data kept pointing at the same three screens. For each one, drag the slider to compare the old
@@ -336,7 +408,7 @@
                 </div>
 
                 <!-- Moment 2 -->
-                <div class="cs-pain">
+                <div class="cs-pain" data-full>
                     <div class="cs-pain-head"><span class="n">02</span><h3>“I thought I was done.”</h3></div>
                     <div class="cs-compare" data-compare>
                         <div class="cs-frame">
@@ -439,7 +511,7 @@
                 </div>
 
                 <!-- Moment 3 -->
-                <div class="cs-pain">
+                <div class="cs-pain" data-full>
                     <div class="cs-pain-head"><span class="n">03</span><h3>“What am I supposed to click?”</h3></div>
                     <div class="cs-compare" data-compare>
                         <div class="cs-frame">
@@ -534,43 +606,20 @@
                     </div>
                 </div>
 
-                <p style="margin-top:56px">
-                    Put together, the drop-off data and the new tax planning scope made the call for us. Patching wasn't
-                    enough. The product needed a full redesign and rebuild.
-                </p>
-            </section>
 
-            <!-- Goals -->
-            <section class="case-section" id="goals">
-                <h2>Design goals</h2>
-                <p class="cs-lead">Make it simple, but significant.</p>
-                <p>
-                    The hard part of tax software isn't the visuals. It's taking a mountain of required information and
-                    making it feel small. Before drawing a single screen, I agreed three rules with the team. Every
-                    design decision had to pass all three.
-                </p>
-
-                <div class="cs-goals">
-                    <div class="cs-goal">
-                        <h4>Always show the next step</h4>
-                        <p>Intuitive and transparent. At any point, you know where you are, what's left, and what to do now.</p>
-                        <ul class="cs-chips"><li><a href="#p-status">Visibility of system status</a></li><li><a href="#p-goal">Goal-gradient effect</a></li></ul>
-                    </div>
-                    <div class="cs-goal">
-                        <h4>Fewer clicks, less time</h4>
-                        <p>Cut every click that doesn't earn its place. Fewer steps means less time on task, and fewer chances to give up.</p>
-                        <ul class="cs-chips"><li><a href="#p-hicks">Hick's law</a></li><li><a href="#p-fitts">Fitts's law</a></li><li><a href="#p-progressive">Progressive disclosure</a></li></ul>
-                    </div>
-                    <div class="cs-goal">
-                        <h4>Earn trust</h4>
-                        <p>People are handing over their finances. A calm, consistent interface that catches mistakes early makes them believe the final number.</p>
-                        <ul class="cs-chips"><li><a href="#p-aesthetic">Aesthetic-usability effect</a></li><li><a href="#p-consistency">Consistency</a></li><li><a href="#p-error">Error prevention</a></li></ul>
-                    </div>
+                <div class="cs-tradeoff" data-draft data-full>
+                    <p class="cs-label">A call I lost</p>
+                    <h3>[The decision you didn't win, in one line]</h3>
+                    <dl>
+                        <div><dt>What I pushed for</dt><dd>[What you argued for, e.g. a beta group for the new navigation before the full rollout]</dd></div>
+                        <div><dt>What we did</dt><dd>[What the team shipped instead]</dd></div>
+                        <div><dt>Why</dt><dd>[The constraint behind it: deadline, engineering cost, a business priority]</dd></div>
+                        <div><dt>What I took from it</dt><dd>[How it turned out, and what you'd do with that next time]</dd></div>
+                    </dl>
                 </div>
             </section>
-
-            <!-- Impact -->
-            <section class="case-section" id="impact">
+            <section class="case-section" id="impact" data-tldr>
+                <p class="cs-kicker">Impact</p>
                 <h2>Impact</h2>
                 <p>
                     After the redesign of these data-heavy layouts, the number of people filing on their own, without
@@ -594,10 +643,13 @@
                     </div>
                 </div>
                 <p style="margin-top:24px">And a handful of people took the time to tweet about it, which honestly made my week.</p>
-            </section>
 
-            <!-- Learnings -->
-            <section class="case-section" id="learnings">
+                <div class="metric-grid" data-draft>
+                    <div class="metric"><span class="n">[x]% → [y]%</span><span class="d">[A second checked number: filing completion rate, support tickets per 1,000 returns, or median time to file]</span></div>
+                </div>
+            </section>
+            <section class="case-section" id="learnings" data-tldr>
+                <p class="cs-kicker">Reflection</p>
                 <h2>What I learned</h2>
                 <ul class="cs-learn">
                     <li><b>Learn the domain first</b>I had no fintech background. I had to learn how UK Self Assessment actually works before I could simplify it for anyone else.</li>
@@ -606,10 +658,18 @@
                     <li><b>Design is a team sport</b>The data lived with different teams. Staying in constant contact with them was the only way to see the full picture.</li>
                     <li><b>Ship, test, adjust, repeat</b>Every feedback session changed something. Keep testing until you understand your users, then test again.</li>
                 </ul>
-            </section>
 
-            <!-- Principles -->
+                <div data-draft>
+                    <h3>What I'd do differently</h3>
+                    <ul class="cs-learn">
+                        <li><b>Measure each screen, not just the year</b>We could see the yearly total move, but not which change did the most work. I'd set up per-screen funnels before release so every fix gets its own number.</li>
+                        <li><b>Test with tax experts too</b>Accountants see the same filing mistakes over and over. Bringing them into testing early would have surfaced edge cases sooner.</li>
+                        <li><b>Ship in slices</b>I'd release the new navigation on its own first and measure it, before the forms and visual changes land on top.</li>
+                    </ul>
+                </div>
+            </section>
             <section class="case-section" id="principles">
+                <p class="cs-kicker">Appendix</p>
                 <h2>Principles used</h2>
                 <p>The UX principles behind the decisions above. Tap any one to read what it means here.</p>
                 <div class="cs-gloss">
@@ -628,11 +688,12 @@
                     <details id="p-aesthetic"><summary>Aesthetic-usability effect<small>Trust</small></summary><div><p>People trust, and forgive, interfaces that look considered. With money involved, that trust matters.</p></div></details>
                 </div>
 
-                <a class="next-case" href="carerelay.html">
-                    <small>Next case study</small>
-                    <span>CareRelay</span>
-                </a>
             </section>
+
+            <nav class="case-pager" aria-label="More case studies">
+                <a class="prev-case" href="databridge.html" rel="prev"><small>Previous case study</small><span>Databridge</span></a>
+                <a class="next-case" href="carerelay.html" rel="next"><small>Next case study</small><span>CareRelay</span></a>
+            </nav>
 
         </main>
     </div>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play — Raghav Prasanna</title>
+    <meta name="description" content="Small interactive things Raghav Prasanna builds for fun. Try each one live, see how it's made, and take the code or a prompt to build your own.">
+    <meta property="og:title" content="Play — Raghav Prasanna">
+    <meta property="og:description" content="Small interactive things I build for fun. Try them, see how they're made, take the code.">
+    <meta property="og:image" content="https://raghavprasanna.co.uk/images/id-peek-card.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="logo.png" type="image/png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preload" href="Fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf" as="font" type="font/ttf" crossorigin>
+    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side","read"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v});var q=location.search;if(/[?&]tldr(=|&|$)/.test(q))d.dataset.read="tldr";else if(/[?&]full(=|&|$)/.test(q))delete d.dataset.read}catch(e){}</script>
+    <link rel="canonical" href="https://raghavprasanna.co.uk/play.html">
+    <meta property="og:url" content="https://raghavprasanna.co.uk/play.html">
+    <script defer data-domain="raghavprasanna.co.uk" src="https://plausible.io/js/script.outbound-links.file-downloads.tagged-events.js"></script>
+    <script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
+    <link rel="stylesheet" href="site.css">
+    <link rel="stylesheet" href="play.css">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="site-id">
+            <button class="avatar-ring" type="button" data-stories aria-label="View Raghav's stories"><img src="images/bwme.png" alt="" width="44" height="44" decoding="async"></button>
+            <div class="site-id-text">
+                <a class="site-name" href="./">Raghav Prasanna<span class="verified" role="img" aria-label="Verified"></span></a>
+                <span class="site-loc">London, UK</span>
+            </div>
+        </div>
+        <nav class="site-nav" aria-label="Main">
+            <a href="play.html" aria-current="page">Play</a>
+            <a href="about.html">About</a>
+            <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
+            <span class="site-clock"><time data-clock>--:--</time></span>
+        </nav>
+    </header>
+
+    <main class="play">
+
+        <section class="play-hero">
+            <h1 class="play-title">Play</h1>
+            <p class="play-intro">
+                Small interactive things I build for fun, usually while making this site.
+                Each one is live here. Open one to <strong>try it, see how it's made,</strong>
+                and take the code or a <strong>prompt to build your own</strong>.
+            </p>
+        </section>
+
+        <ul class="project-grid play-grid">
+            <li>
+                <a class="card" href="play-highlighter.html">
+                    <div class="card-media play-preview" aria-hidden="true">
+                        <div class="pv-highlighter">
+                            <div class="pv-menu"><span>Copy</span><i></i><b style="--dot: var(--hl-yellow)"></b><b style="--dot: var(--hl-green)"></b><b style="--dot: var(--hl-pink)"></b><b style="--dot: var(--hl-blue)"></b></div>
+                            <p>Select a few words, <span class="hl-paint" data-c="yellow" data-v="1187">pick Highlight</span>, and every stroke comes out <span class="hl-paint" data-c="pink" data-v="40219">a little different</span>.</p>
+                        </div>
+                        <ul class="tags"><li>Interaction</li><li>Vanilla JS</li><li>Live on every page</li></ul>
+                    </div>
+                    <h2 class="card-title">Highlighter: iOS-style selection and a marker that never draws the same stroke twice</h2>
+                </a>
+            </li>
+            <li>
+                <a class="card" href="play-pullcord.html">
+                    <div class="card-media play-preview pv-cord-scene" aria-hidden="true">
+                        <div class="pv-cord"><span class="pv-rope"></span><span class="pv-knob"></span></div>
+                        <ul class="tags"><li>Physics</li><li>Vanilla JS</li><li>Live on every page</li></ul>
+                    </div>
+                    <h2 class="card-title">Pull cord: a lamp switch for dark mode, with a rope that hangs, swings and settles</h2>
+                </a>
+            </li>
+        </ul>
+
+        <footer class="about-footer play-footer"><span>2026</span> Raghav Prasanna</footer>
+
+    </main>
+
+    <script src="site.js" defer></script>
+</body>
+
+</html>

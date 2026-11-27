@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pull cord — Play — Raghav Prasanna</title>
+    <meta name="description" content="A lamp pull cord that switches dark mode. The rope is a real physics simulation, so it hangs, swings and settles. Try it, tune it, see how it's made, and take the code or a prompt.">
+    <meta property="og:title" content="Pull cord — Play — Raghav Prasanna">
+    <meta property="og:description" content="A lamp pull cord that switches dark mode, with a rope that hangs, swings and settles like the real thing.">
+    <meta property="og:image" content="https://raghavprasanna.co.uk/images/id-peek-card.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="logo.png" type="image/png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="preload" href="Fonts/GoogleSans-VariableFont_GRAD,opsz,wght.ttf" as="font" type="font/ttf" crossorigin>
+    <script>try{var d=document.documentElement,s=localStorage;["theme","font","size","motion","side","read"].forEach(function(k){var v=s.getItem(k);if(v&&v!=="light"&&v!=="default")d.dataset[k]=v});var q=location.search;if(/[?&]tldr(=|&|$)/.test(q))d.dataset.read="tldr";else if(/[?&]full(=|&|$)/.test(q))delete d.dataset.read}catch(e){}</script>
+    <link rel="canonical" href="https://raghavprasanna.co.uk/play-pullcord.html">
+    <meta property="og:url" content="https://raghavprasanna.co.uk/play-pullcord.html">
+    <script defer data-domain="raghavprasanna.co.uk" src="https://plausible.io/js/script.outbound-links.file-downloads.tagged-events.js"></script>
+    <script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
+    <link rel="stylesheet" href="site.css">
+    <link rel="stylesheet" href="play.css">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="site-id">
+            <button class="avatar-ring" type="button" data-stories aria-label="View Raghav's stories"><img src="images/bwme.png" alt="" width="44" height="44" decoding="async"></button>
+            <div class="site-id-text">
+                <a class="site-name" href="./">Raghav Prasanna<span class="verified" role="img" aria-label="Verified"></span></a>
+                <span class="site-loc">London, UK</span>
+            </div>
+        </div>
+        <nav class="site-nav" aria-label="Main">
+            <a href="play.html" aria-current="page">Play</a>
+            <a href="about.html">About</a>
+            <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
+            <span class="site-clock"><time data-clock>--:--</time></span>
+        </nav>
+    </header>
+
+    <!-- a little note pointing at the cord, top right; fades once it's been pulled or you scroll -->
+    <div class="cord-hint" aria-hidden="true">
+        <span>give it a tug</span>
+        <svg viewBox="0 0 60 70" fill="none"><path d="M6 64 C 10 36, 26 18, 50 10" /><path d="M40 6 L 51 10 L 44 19" /></svg>
+    </div>
+
+    <main class="lab">
+
+        <a class="back-link" href="play.html"><span>Play</span></a>
+
+        <header class="lab-head">
+            <h1 class="lab-title">Pull cord</h1>
+            <p class="lab-lede">
+                A lamp pull cord that switches dark mode. The rope is simulated for real, so it hangs, swings and
+                settles like one. It hangs in the top right corner of every page. Grab the knob and pull.
+            </p>
+            <ul class="tags"><li>Physics</li><li>Vanilla JS</li><li>No dependencies</li><li>Live on every page</li></ul>
+            <div class="lab-actions">
+                <a class="btn-dark" href="#code">Get the code</a>
+                <a class="lab-btn" href="#prompt">Copy the prompt</a>
+            </div>
+        </header>
+
+        <section class="lab-demo" aria-labelledby="demo-title">
+            <h2 class="visually-hidden" id="demo-title">Try it</h2>
+            <div class="lab-stage lab-lamp">
+                <div class="lamp" aria-hidden="true">
+                    <span class="lamp-wire"></span>
+                    <span class="lamp-shade"></span>
+                    <span class="lamp-bulb"></span>
+                    <span class="lamp-glow"></span>
+                </div>
+                <div class="lamp-copy">
+                    <p class="lab-hint">Pull the cord in the top right corner, or press <kbd>L</kbd>.</p>
+                    <p class="lab-status lamp-status" data-status-cord aria-live="polite">Lights on. Nobody has pulled the cord yet.</p>
+                    <button class="lab-btn" type="button" data-tug>Pull it for me</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="lab-section" id="tune">
+            <h2 class="lab-h2">Make it yours</h2>
+            <p class="lab-p">These sliders drive the cord on this page live. Drag one, then go and pull the cord to feel the difference.</p>
+            <div class="lab-sliders" data-tune="PullCord">
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="gravity" min="300" max="2600" step="10">
+                        <span class="lab-slider-label">Gravity</span>
+                        <output></output>
+                    </span>
+                    <small>floaty → taut</small>
+                </label>
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="damping" min="0.8" max="0.99" step="0.005">
+                        <span class="lab-slider-label">Swing</span>
+                        <output></output>
+                    </span>
+                    <small>settles at once → keeps swinging</small>
+                </label>
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="stiffness" min="2" max="40" step="1">
+                        <span class="lab-slider-label">Stiffness</span>
+                        <output></output>
+                    </span>
+                    <small>stretchy → rigid</small>
+                </label>
+                <label class="lab-slider">
+                    <span class="lab-slider-field">
+                        <input type="range" name="travel" min="8" max="60" step="1">
+                        <span class="lab-slider-label">Pull travel</span>
+                        <output></output>
+                    </span>
+                    <small>short → deep</small>
+                </label>
+            </div>
+            <button class="lab-btn lab-reset" type="button" data-reset>Back to defaults</button>
+        </section>
+
+        <section class="lab-section" id="how">
+            <h2 class="lab-h2">How it's made</h2>
+            <ol class="lab-steps">
+                <li>
+                    <h3>A rope made of thirteen points</h3>
+                    <p>
+                        The cord is 12 segments of 8px, simulated with Verlet integration. Each point remembers only
+                        where it is and where it was a frame ago; the difference is its velocity. Every frame adds
+                        gravity, lets the points coast, and keeps the top one pinned to the ceiling.
+                    </p>
+                </li>
+                <li>
+                    <h3>Stiffness is just repetition</h3>
+                    <p>
+                        After moving, each pair of neighbours is pulled back to exactly 8px apart. Doing that once makes
+                        a rubber band. Doing it 20 times a frame makes a cord. That loop count is the Stiffness slider.
+                    </p>
+                </li>
+                <li>
+                    <h3>Grabbing the knob</h3>
+                    <p>
+                        On <code>pointerdown</code> the knob captures the pointer and the last point is pinned to it,
+                        offset by where you grabbed. You can pull it in any direction, but never further than the rope
+                        length plus the pull travel, so it feels like it's attached to something.
+                    </p>
+                </li>
+                <li>
+                    <h3>It switches mid-pull</h3>
+                    <p>
+                        Like a real pull switch, the lights change the moment you pass 70% of the travel, not when you
+                        let go. It re-arms once the cord comes back up, so one pull is always one switch. Let go and it
+                        springs back, using the Swing value to decide how long it keeps moving.
+                    </p>
+                </li>
+                <li>
+                    <h3>One SVG path</h3>
+                    <p>
+                        The rope is a single path with quadratic curves through the midpoints of the segments, so it
+                        never looks jointed. The knob is a real <code>&lt;button&gt;</code>, moved with a transform and
+                        rotated to the angle of the last segment.
+                    </p>
+                </li>
+                <li>
+                    <h3>It sleeps when it's still</h3>
+                    <p>
+                        The animation loop stops as soon as no point is moving more than 0.02px, so the cord costs
+                        nothing while it hangs there. Click, Enter or Space also pull it with a little tug, and
+                        <kbd>L</kbd> works from anywhere on the site. With reduced motion on, it skips the swing on load.
+                    </p>
+                </li>
+            </ol>
+        </section>
+
+        <section class="lab-section" id="code">
+            <h2 class="lab-h2">The code</h2>
+            <p class="lab-p">
+                This is the exact code running on this site, read live from its source files. Two plain files, no
+                build step. Add the CSS after your styles and the script before <code>&lt;/body&gt;</code>.
+            </p>
+            <div class="lab-code" data-region="pullcord" data-hl-skip>
+                <div class="lab-code-bar">
+                    <div class="lab-tabs" role="tablist" aria-label="Files">
+                        <button type="button" role="tab" aria-selected="true" data-file="js">pullcord.js</button>
+                        <button type="button" role="tab" aria-selected="false" data-file="css">pullcord.css</button>
+                    </div>
+                    <span class="lab-code-meta" data-code-meta></span>
+                    <div class="lab-code-tools">
+                        <button type="button" class="lab-tool" data-code-copy>Copy</button>
+                        <button type="button" class="lab-tool" data-code-download>Download</button>
+                    </div>
+                </div>
+                <pre class="lab-pre" tabindex="0"><code data-code>Loading the source…</code></pre>
+                <button type="button" class="lab-code-more" data-code-more>Show all</button>
+            </div>
+            <p class="lab-note">
+                The top of the script has two tiny theme helpers (<code>getPref</code> and <code>setPref</code>) that
+                flip <code>&lt;html data-theme="dark"&gt;</code>. Point them at your own theme switch. The colours come
+                from a few tokens at the top of the CSS file.
+            </p>
+        </section>
+
+        <section class="lab-section lab-prompt" id="prompt">
+            <h2 class="lab-h2">Build your own</h2>
+            <p class="lab-p">
+                Rather have your AI build it to fit your own codebase? Copy this prompt into Claude or your coding
+                assistant. It describes the physics, the feel and the details above.
+            </p>
+            <div class="lab-prompt-box" data-hl-skip>
+                <pre class="lab-prompt-text" data-prompt>Build a lamp-style pull cord that toggles dark mode on my website, in plain JavaScript and CSS with no dependencies.
+
+What it is
+- A thin rope hangs from the top edge of the viewport, 24px from the right (12px on phones), with a small knob at the end: 16×24px, rounded, with a 4px accent-coloured dot near the bottom.
+- The wrapper is position: fixed at the top and above the page content. Use a darker knob on dark themes.
+- Pulling the knob toggles light/dark mode. Store the choice in localStorage and apply it as &lt;html data-theme="dark"&gt;.
+
+Physics (Verlet rope)
+- 13 points: 12 segments of 8px each. Point 0 is pinned at (0, 0), and the knob sits on the last point.
+- Store each point as { x, y, px, py }. Velocity is (x - px, y - py); there is no stored velocity.
+- Every frame (dt capped at 33ms):
+  1. Multiply each point's velocity by a friction factor: 0.985 normally, or a "damping" of 0.94 right after release.
+  2. Add gravity: 1250 px/s² × dt².
+  3. Run 20 constraint passes. Each pass re-pins point 0 and pulls every neighbouring pair back to 8px apart. Split the correction 50/50, except that the pinned top point and a grabbed knob don't move.
+- The number of passes is the rope's stiffness: fewer passes make it stretchy, more make it rigid.
+- Read gravity, damping, passes and pull travel from a config object every frame, so changes apply to the very next pull.
+- Stop the requestAnimationFrame loop when no point has moved more than 0.02px in a frame (plus a few frames of grace after any interaction). Restart it on interaction. It should cost nothing while it hangs still.
+
+Drawing
+- Draw the rope as one SVG path in a 200×240 overflow-visible SVG centred on the anchor. Start with M at the anchor, then add a quadratic curve to the midpoint of each next segment, using each point as the control point, and end with L at the last point. That way the rope never looks jointed.
+- Use stroke-width 1.5, round caps and a translucent ink colour (about 40% of the text colour).
+- The knob is a real &lt;button&gt;. Position it with translate() at the last point and rotate it to the angle of the last segment (atan2), with transform-origin at its top centre.
+
+Interaction
+- On pointerdown on the knob:
+  - call preventDefault and setPointerCapture;
+  - remember the grab offset;
+  - pin the last point to the pointer.
+- Limit the pull to rest length + 26px of travel, in any direction, and keep the knob at least 4px below the anchor.
+- Switch the theme the moment the pull distance passes rest length + 70% of the travel, like a real pull switch detenting mid-pull, not on release. Re-arm once it comes back within rest length + 6px, so one pull is one switch.
+- On release, let it spring back using the damping factor.
+- A click without a drag, Enter or Space also toggles, with a small upward tug: offset each point's previous y by (i / 12) × 12px.
+- Add a keyboard shortcut "L" that clicks the knob when no input is focused.
+- Keep aria-pressed and aria-label ("Turn the lights off" / "Turn the lights on") in sync with the theme. Give it a visible focus ring. Call navigator.vibrate(8) on toggle where supported.
+- On load, give it a small swing (offset the previous x of each point by (i / 12) × 3px), but skip that when prefers-reduced-motion is on.
+
+Expose window.PullCord = { config, defaults } so a settings page can tune gravity, damping, stiffness (passes) and travel live.</pre>
+            </div>
+            <button class="btn-dark lab-copy-prompt" type="button" data-copy-prompt>Copy prompt</button>
+        </section>
+
+        <nav class="case-pager lab-pager" aria-label="More in Play">
+            <a class="prev-case" href="play-highlighter.html" rel="prev"><small>Previous</small><span>Highlighter</span></a>
+            <a class="next-case" href="play.html" rel="next"><small>Back to</small><span>Play</span></a>
+        </nav>
+
+        <footer class="about-footer play-footer"><span>2026</span> Raghav Prasanna</footer>
+
+    </main>
+
+    <script src="site.js" defer></script>
+    <script src="play.js" defer></script>
+</body>
+
+</html>
