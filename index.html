@@ -26,10 +26,37 @@
     </script>
     <script defer data-domain="raghavprasanna.co.uk" src="https://plausible.io/js/script.outbound-links.file-downloads.tagged-events.js"></script>
     <script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@400&family=Google+Sans+Code:wght@400;500&display=swap">
     <link rel="stylesheet" href="site.css">
 </head>
 
-<body>
+<body class="home">
+    <section class="intro" id="top" aria-labelledby="intro-title">
+        <div class="intro-dither" aria-hidden="true"></div>
+        <div class="intro-inner">
+            <h1 class="intro-title" id="intro-title">Raghav is a product designer based in<br class="br-wide"> the <em class="serif">United Kingdom</em></h1>
+
+            <figure class="intro-figure">
+                <img src="images/isometric%20me%201.png" alt="Raghav, holding a coffee and mid-conversation" width="600" height="600" decoding="async" fetchpriority="high">
+            </figure>
+
+            <p class="intro-lede">
+                Product development assistant &amp; Design Technologist for <span class="chip">4+ yrs</span> shipping 0-to-1
+                AI, spatial computing across UX design, hardware, and full-stack development with <span class="chip">40+ freelance</span> projects delivered.
+            </p>
+
+            <p class="intro-now">
+                Right now, I ship enterprise XR and AI activations at
+                <a href="https://www.aircards.co/" target="_blank" rel="noopener"><b>Aircards</b><img class="intro-logo" src="images/Aircards%20mini%20logo%20hero%20section.png" alt="" width="60" height="60"></a>,
+                build <a href="https://dedrox2k.github.io/dedrox/airpaste.html" target="_blank" rel="noopener"><b>Airpaste</b><img class="intro-logo" src="images/airpaste%20mini%20logo%20hero%20section.png" alt="" width="60" height="60"></a>
+                (an open-source visual workspace), and architect the frontend and AI automations for
+                <a href="https://www.listenr.in/" target="_blank" rel="noopener"><b>Listenr</b><img class="intro-logo" src="images/Listenr%20mini%20logo%20hero%20section.png" alt="" width="60" height="60"></a>.
+            </p>
+        </div>
+    </section>
+
     <header class="site-header">
         <div class="site-id">
             <button class="avatar-ring" type="button" data-stories aria-label="View Raghav's stories"><img src="images/bwme.png" alt="" width="44" height="44" decoding="async"></button>
@@ -40,44 +67,14 @@
         </div>
         <nav class="site-nav" aria-label="Main">
             <a href="play.html">Play</a>
-            <a href="about.html">About</a>
             <a href="threeD/CV_RESUME-RAGHAV.pdf" target="_blank" rel="noopener"><span class="arrow-out">Résumé</span></a>
-            <span class="site-clock"><time data-clock>--:--</time></span>
+            <p class="header-status" data-status>It's late in London, so I'm probably prototyping, testing, or figuring something out.</p>
         </nav>
     </header>
 
-    <div class="shell">
-
-        <aside class="side" aria-label="About Raghav">
-            <h1 class="bio-title">Owning the problem, not just the solution.</h1>
-
-            <p class="bio-copy">
-                I'm Raghav, a product designer and creative technologist currently at
-                <a class="u-link" href="https://www.aircards.co/" target="_blank" rel="noopener"><span class="arrow-out">Aircards</span></a>.
-                I work across AI, data platforms, physical kiosks and early-stage products, and I speak the
-                language of both the user and the engineer, which saves a lot of headaches.
-            </p>
-
-            <nav class="bio-links" aria-label="Contact">
-                <a href="mailto:raghavprasanna2000@gmail.com"><span class="arrow-out is-mail">Email</span></a>
-                <a href="https://www.linkedin.com/in/raghav-prasanna-b530621b0/" target="_blank" rel="noopener"><span class="arrow-out">LinkedIn</span></a>
-                <a href="https://www.behance.net/raghavprasanna" target="_blank" rel="noopener"><span class="arrow-out">Behance</span></a>
-                <a href="https://github.com/dedrox2k" target="_blank" rel="noopener"><span class="arrow-out">GitHub</span></a>
-            </nav>
-
-            <p class="bio-status" data-status>It's late in London, so I'm probably prototyping, testing, or figuring something out.</p>
-        </aside>
-
+    <div class="shell is-solo" id="work">
         <main>
-            <div class="work-head">
-                <div class="filter" data-filter role="group" aria-label="Filter projects">
-                    <span class="filter-thumb" aria-hidden="true"></span>
-                    <button type="button" data-value="all" aria-pressed="true">All</button>
-                    <button type="button" data-value="case">Case studies</button>
-                    <button type="button" data-value="built">Built &amp; shipped</button>
-                </div>
-                <span class="work-count" data-count aria-live="polite"></span>
-            </div>
+            <h2 class="visually-hidden">Work</h2>
 
             <ul class="project-grid">
                 <li data-category="case">
@@ -86,7 +83,7 @@
                             <img src="images/case/db-supplier-dashboard.svg" alt="Databridge supplier dashboard" loading="eager" decoding="async">
                             <ul class="tags"><li>Concept</li><li>Product design</li><li>AI</li></ul>
                         </div>
-                        <h2 class="card-title">Designing trust for an AI data marketplace</h2>
+                        <div class="card-info"><h3 class="card-name">Databridge</h3><p class="card-desc">Designing trust for an AI data marketplace</p></div>
                     </a>
                 </li>
                 <li data-category="case">
@@ -95,7 +92,7 @@
                             <img src="images/case/tb-cover.svg" alt="Redesigned Tallybird tax filing screen with an expandable income menu" loading="eager" decoding="async">
                             <ul class="tags"><li>Fintech</li><li>Web app</li><li>Shipped</li></ul>
                         </div>
-                        <h2 class="card-title">Tripling self-filed tax returns by redesigning Tallybird</h2>
+                        <div class="card-info"><h3 class="card-name">Tallybird</h3><p class="card-desc">Tripling self-filed tax returns by redesigning Tallybird</p></div>
                     </a>
                 </li>
                 <li data-category="case">
@@ -104,27 +101,7 @@
                             <img src="images/case/cr-cover.svg" alt="CareRelay nurse dashboard showing a heart rate alert" loading="eager" decoding="async">
                             <ul class="tags"><li>Healthcare</li><li>IoT</li><li>Dashboard</li></ul>
                         </div>
-                        <h2 class="card-title">Designing an alert system where eight seconds matter</h2>
-                    </a>
-                </li>
-                <li data-category="built">
-                    <a class="card" href="https://dedrox2k.github.io/dedrox/airpaste.html" target="_blank" rel="noopener">
-                        <div class="card-media">
-                            <img src="images/proj-1.png" alt="AirPaste canvas with pinned images, notes and links" width="437" height="437" loading="eager" decoding="async">
-                            <span class="card-badge arrow-out">Try the beta</span>
-                            <ul class="tags"><li>Personal project</li><li>Desktop app</li><li>Beta</li></ul>
-                        </div>
-                        <h2 class="card-title">A local-first canvas for people who think in pictures</h2>
-                    </a>
-                </li>
-                <li data-category="built">
-                    <a class="card" href="https://www.listenr.in/" target="_blank" rel="noopener">
-                        <div class="card-media">
-                            <img src="images/proj-2.png" alt="Listenr website homepage" width="437" height="437" loading="eager" decoding="async">
-                            <span class="card-badge arrow-out">listenr.in</span>
-                            <ul class="tags"><li>Web</li><li>Backend</li><li>Live</li></ul>
-                        </div>
-                        <h2 class="card-title">Building and running the website and backend behind Listenr</h2>
+                        <div class="card-info"><h3 class="card-name">CareRelay</h3><p class="card-desc">Designing an alert system where eight seconds matter</p></div>
                     </a>
                 </li>
                 <li data-category="case">
@@ -134,7 +111,7 @@
                             <div class="ribbon"><span>Older case study</span></div>
                             <ul class="tags"><li>Health</li><li>Mobile app</li><li>CBT</li></ul>
                         </div>
-                        <h2 class="card-title">Logging a cigarette in 3 steps instead of 7</h2>
+                        <div class="card-info"><h3 class="card-name">Clear Breath</h3><p class="card-desc">Logging a cigarette in 3 steps instead of 7</p></div>
                     </a>
                 </li>
                 <li data-category="case">
@@ -144,7 +121,7 @@
                             <div class="ribbon"><span>Older case study</span></div>
                             <ul class="tags"><li>Travel</li><li>AR</li><li>Mobile app</li></ul>
                         </div>
-                        <h2 class="card-title">Finding your gate, and your family, in a busy airport</h2>
+                        <div class="card-info"><h3 class="card-name">Air Buddy</h3><p class="card-desc">Finding your gate, and your family, in a busy airport</p></div>
                     </a>
                 </li>
                 <li data-category="case">
@@ -153,12 +130,18 @@
                             <img src="images/DEDROX.DSGN/f1.png" alt="Research board for a new app idea" loading="lazy" decoding="async">
                             <ul class="tags"><li>UX research</li><li>Desk research</li></ul>
                         </div>
-                        <h2 class="card-title">How I research a new app idea before designing it</h2>
+                        <div class="card-info"><h3 class="card-name">Research process</h3><p class="card-desc">How I research a new app idea before designing it</p></div>
                     </a>
                 </li>
             </ul>
         </main>
     </div>
+
+    <nav class="dock" aria-label="Sections">
+        <a class="dock-item" href="./" data-dock="home" aria-current="page">Home</a>
+        <a class="dock-item" href="live.html" data-dock="live">Live Projects</a>
+        <a class="dock-item" href="about.html" data-dock="about">About Me</a>
+    </nav>
 
     <script src="site.js" defer></script>
 </body>

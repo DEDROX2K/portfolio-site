@@ -712,7 +712,11 @@
             var y = Math.max(0, window.scrollY);
             var dy = y - lastY;
             if (Math.abs(dy) < 6) return; // ignore tiny jitters
-            var hide = dy > 0 && y > header.offsetHeight;
+            // on the home page the header sits under the full-screen intro, so it
+            // only starts hiding once it has actually stuck to the top
+            var intro = document.querySelector(".intro");
+            var start = intro ? intro.offsetHeight : 0;
+            var hide = dy > 0 && y > start + header.offsetHeight;
             header.classList.toggle("is-hidden", hide);
             lastY = y;
         }
@@ -773,6 +777,9 @@
     (function () {
         var root = document.documentElement;
         var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        // the cord only hangs where people settle in to read: case studies, the
+        // about page, and its own demo page (opted in with <body data-pullcord>)
+        if (!document.querySelector(".case-body, main.about, [data-pullcord]")) return;
 
         var cord = document.createElement("div");
         cord.className = "pullcord";
@@ -2129,4 +2136,165 @@
         });
     })();
     // #endregion highlighter
+
+    /* ---------- Dock (bottom nav): Home / Live Projects / About Me ----------
+       Plain links; each page marks its own item with aria-current. While the
+       home intro is on screen the dock shrinks and peeks up from the bottom edge. */
+    (function () {
+        var dock = document.querySelector(".dock");
+        if (!dock) return;
+        document.body.classList.add("has-dock");
+        var intro = document.querySelector(".intro");
+        if (!intro) return;
+        function sync() {
+            dock.classList.toggle("is-peek", window.scrollY < intro.offsetHeight * .5);
+        }
+        window.addEventListener("scroll", sync, { passive: true });
+        window.addEventListener("resize", sync);
+        sync();
+    })();
+
+    /* ---------- Intro: the dither strip eases away as you leave the intro ---------- */
+    (function () {
+        var strip = document.querySelector(".intro-dither");
+        var intro = document.querySelector(".intro");
+        if (!strip || !intro) return;
+        var ticking = false;
+        function update() {
+            ticking = false;
+            var p = Math.min(1, Math.max(0, window.scrollY / (intro.offsetHeight * .6)));
+            var e = 1 - Math.pow(1 - p, 3); // ease-out
+            strip.style.opacity = String(1 - e);
+            strip.style.transform = "translateY(" + (-e * 100) + "%)";
+        }
+        window.addEventListener("scroll", function () {
+            if (!ticking) { ticking = true; requestAnimationFrame(update); }
+        }, { passive: true });
+        update();
+    })();
+
+    /* ---------- Custom page scrollbar: a slim, soft thumb that shows while scrolling ---------- */
+    (function () {
+        var root = document.documentElement;
+        if (window.matchMedia("(pointer: coarse)").matches) return; // touch keeps the system overlay bar
+        root.classList.add("has-scrollbar");
+        var bar = document.createElement("div");
+        bar.className = "scrollbar";
+        bar.setAttribute("aria-hidden", "true");
+        bar.innerHTML = '<div class="scrollbar-thumb"></div>';
+        document.body.appendChild(bar);
+        var thumb = bar.firstChild;
+        var hideTimer = 0, dragging = false, startY = 0, startScroll = 0, ticking = false;
+        var PAD = 6, MIN = 36;
+        function metrics() {
+            var view = window.innerHeight, full = root.scrollHeight;
+            var track = view - PAD * 2;
+            var size = Math.max(MIN, track * view / full);
+            return { view: view, full: full, track: track, size: size, max: full - view };
+        }
+        function render() {
+            ticking = false;
+            var m = metrics();
+            bar.hidden = m.max <= 1;
+            if (bar.hidden) return;
+            var top = PAD + (m.track - m.size) * (window.scrollY / m.max);
+            thumb.style.height = m.size + "px";
+            thumb.style.transform = "translateY(" + top + "px)";
+        }
+        function show() {
+            bar.classList.add("is-on");
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(function () { if (!dragging && !bar.matches(":hover")) bar.classList.remove("is-on"); }, 900);
+        }
+        window.addEventListener("scroll", function () {
+            if (!ticking) { ticking = true; requestAnimationFrame(render); }
+            show();
+        }, { passive: true });
+        window.addEventListener("resize", render);
+        if ("ResizeObserver" in window) new ResizeObserver(render).observe(document.body);
+        bar.addEventListener("mouseenter", show);
+        bar.addEventListener("mouseleave", show);
+        thumb.addEventListener("pointerdown", function (e) {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            dragging = true;
+            startY = e.clientY;
+            startScroll = window.scrollY;
+            thumb.setPointerCapture(e.pointerId);
+            root.classList.add("is-scrubbing");
+            bar.classList.add("is-drag");
+        });
+        thumb.addEventListener("pointermove", function (e) {
+            if (!dragging) return;
+            var m = metrics();
+            var ratio = m.max / Math.max(1, m.track - m.size);
+            window.scrollTo(0, startScroll + (e.clientY - startY) * ratio);
+        });
+        function end() {
+            if (!dragging) return;
+            dragging = false;
+            root.classList.remove("is-scrubbing");
+            bar.classList.remove("is-drag");
+            show();
+        }
+        thumb.addEventListener("pointerup", end);
+        thumb.addEventListener("pointercancel", end);
+        // click the track to page towards the click
+        bar.addEventListener("pointerdown", function (e) {
+            if (e.target !== bar) return;
+            var r = thumb.getBoundingClientRect();
+            window.scrollBy({ top: (e.clientY < r.top ? -1 : 1) * window.innerHeight * .9, behavior: "smooth" });
+        });
+        render();
+    })();
+
+    /* ---------- Intro: one scroll gesture snaps between the intro and the work grid ---------- */
+    (function () {
+        var intro = document.querySelector(".intro");
+        var work = document.getElementById("work");
+        if (!intro || !work) return;
+        var busy = false;
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        function workTop() { return intro.offsetHeight; } // header is sticky right under the intro
+        function go(y) {
+            busy = true;
+            window.scrollTo({ top: y, behavior: reduce ? "auto" : "smooth" });
+            setTimeout(function () { busy = false; }, reduce ? 50 : 900);
+        }
+        // returns true if it handled the gesture
+        function step(dir) {
+            var y = window.scrollY, top = workTop();
+            if (dir > 0 && y < top - 4) { go(top); return true; }
+            if (dir < 0 && y > 0 && y <= top + 4) { go(0); return true; }
+            return false;
+        }
+        window.addEventListener("wheel", function (e) {
+            if (e.ctrlKey || Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
+            if (busy) { if (window.scrollY < workTop() + 4) e.preventDefault(); return; }
+            if (Math.abs(e.deltaY) < 4) return;
+            if (step(e.deltaY > 0 ? 1 : -1)) e.preventDefault();
+        }, { passive: false });
+        var ty = null;
+        window.addEventListener("touchstart", function (e) { ty = e.touches[0].clientY; }, { passive: true });
+        window.addEventListener("touchmove", function (e) {
+            if (ty === null) return;
+            var dy = ty - e.touches[0].clientY;
+            var y = window.scrollY, top = workTop();
+            // hold the page still while inside the intro, then snap on release
+            if ((dy > 0 && y < top - 4) || (dy < 0 && y > 0 && y <= top + 4)) e.preventDefault();
+        }, { passive: false });
+        window.addEventListener("touchend", function (e) {
+            if (ty === null) return;
+            var dy = ty - e.changedTouches[0].clientY;
+            ty = null;
+            if (!busy && Math.abs(dy) > 30) step(dy > 0 ? 1 : -1);
+        }, { passive: true });
+        document.addEventListener("keydown", function (e) {
+            if (busy || !plainKey(e)) return;
+            var t = e.target;
+            if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+            var dir = { ArrowDown: 1, PageDown: 1, " ": e.shiftKey ? -1 : 1, ArrowUp: -1, PageUp: -1 }[e.key];
+            if (dir && step(dir)) e.preventDefault();
+        });
+    })();
 })();
